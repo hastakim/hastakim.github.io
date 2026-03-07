@@ -2,29 +2,139 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patent Bet Calculator</title>
     <style>
-        body { font-family: monospace; background-color: #f0f0f0; padding: 20px; }
-        .output-container { background: white; padding: 20px; border: 1px solid #ccc; white-space: pre-wrap; line-height: 1.4; }
-        .controls { margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 8px; }
-        input { margin-right: 10px; padding: 5px; }
-        button { padding: 5px 15px; cursor: pointer; }
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --primary-color: #2c3e50;
+            --accent-color: #27ae60;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--accent-color);
+            border: none;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #219150;
+        }
+
+        #terminal {
+            margin-top: 25px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+
+        .status-msg {
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 
-<div class="controls">
-    <label>Enter stake: </label>
-    <input type="number" id="stake" value="100">
-    <label>Enter odd: </label>
-    <input type="number" id="odd" step="0.1" value="2.0">
-    <button onclick="runCalculator()">Run Calculator</button>
+<div class="container">
+    <h1>Patent Calculator</h1>
+    
+    <div class="input-grid">
+        <div class="input-group">
+            <label>Stake (Rs.)</label>
+            <input type="number" id="stake" value="100" placeholder="Enter stake">
+        </div>
+        <div class="input-group">
+            <label>Odds</label>
+            <input type="number" id="odd" step="0.1" value="2.0" placeholder="Enter odds">
+        </div>
+    </div>
+    
+    <button onclick="runCalculator()">Calculate All Scenarios</button>
+    <p class="status-msg">Calculates events from 3 to 8 selections</p>
+
+    <div id="terminal">Output will appear here...</div>
 </div>
 
-<div id="terminal" class="output-container"></div>
-
 <script>
-// Equivalent to int factorial(int n)
+// Replicating exactly: int factorial(int n)
 function factorial(n) {
     if (n === 1 || n === 0) {
         return 1;
@@ -32,7 +142,7 @@ function factorial(n) {
     return factorial(n - 1) * n;
 }
 
-// Equivalent to int nCr(int n, int r)
+// Replicating exactly: int nCr(int n, int r)
 function nCr(n, r) {
     if (r > n || r < 0) {
         return 0;
@@ -41,8 +151,11 @@ function nCr(n, r) {
 }
 
 function runCalculator() {
-    const stake = parseFloat(document.getElementById('stake').value);
-    const odd = parseFloat(document.getElementById('odd').value);
+    const stakeInput = document.getElementById('stake').value;
+    const oddInput = document.getElementById('odd').value;
+    
+    const stake = parseFloat(stakeInput);
+    const odd = parseFloat(oddInput);
     const terminal = document.getElementById('terminal');
     
     let output = "";
@@ -50,7 +163,8 @@ function runCalculator() {
 
     // Outer loop: Selected events 3 to 8
     for (let selected_events = 3; selected_events <= 8; selected_events++) {
-        output += `Selected events = ${selected_events}\n`;
+        output += `--------------------------------\n`;
+        output += `SELECTED EVENTS = ${selected_events}\n`;
         
         possible_events = 0;
         for (let i = 2; i <= selected_events; i++) {
@@ -59,13 +173,13 @@ function runCalculator() {
         
         output += `Possible outcome is = ${possible_events}\n`;
         let stake_per_event = stake / possible_events;
-        output += `Stake per event is = ${stake_per_event.toFixed(6)}\n`;
+        output += `Stake per event is = Rs.${stake_per_event.toFixed(4)}\n\n`;
 
         // Inner loop: Loss events 0 to 6
         for (let loss_event = 0; loss_event <= 6; loss_event++) {
             let n_minus_loss = selected_events - loss_event;
             
-            // Explicitly replicating your win2 through win8 variables
+            // Replicating manual win variables win2 to win8
             let win2 = nCr(n_minus_loss, 2) * stake_per_event * Math.pow(odd, 2);
             let win3 = nCr(n_minus_loss, 3) * stake_per_event * Math.pow(odd, 3);
             let win4 = nCr(n_minus_loss, 4) * stake_per_event * Math.pow(odd, 4);
@@ -77,7 +191,7 @@ function runCalculator() {
             let win_amount = win2 + win3 + win4 + win5 + win6 + win7 + win8;
             let profit = win_amount - stake;
             
-            output += `Profit when loss is ${loss_event} = Rs.${profit.toFixed(6)}\n`;
+            output += `Loss: ${loss_event} | Profit: Rs.${profit.toFixed(2)}\n`;
         }
         output += `\n`;
     }
