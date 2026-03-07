@@ -1,11 +1,90 @@
 <!DOCTYPE html>
-<html>
-    <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Hastakim</title>
-    </head>
-    <body>
-        <img src="/images/routine.png" alt="routine" />
-   <iframe src="" width="640" height="480"></iframe>
- </body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Patent Bet Calculator</title>
+    <style>
+        body { font-family: monospace; background-color: #f0f0f0; padding: 20px; }
+        .output-container { background: white; padding: 20px; border: 1px solid #ccc; white-space: pre-wrap; line-height: 1.4; }
+        .controls { margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 8px; }
+        input { margin-right: 10px; padding: 5px; }
+        button { padding: 5px 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <label>Enter stake: </label>
+    <input type="number" id="stake" value="100">
+    <label>Enter odd: </label>
+    <input type="number" id="odd" step="0.1" value="2.0">
+    <button onclick="runCalculator()">Run Calculator</button>
+</div>
+
+<div id="terminal" class="output-container"></div>
+
+<script>
+// Equivalent to int factorial(int n)
+function factorial(n) {
+    if (n === 1 || n === 0) {
+        return 1;
+    }
+    return factorial(n - 1) * n;
+}
+
+// Equivalent to int nCr(int n, int r)
+function nCr(n, r) {
+    if (r > n || r < 0) {
+        return 0;
+    }
+    return Math.floor(factorial(n) / (factorial(n - r) * factorial(r)));
+}
+
+function runCalculator() {
+    const stake = parseFloat(document.getElementById('stake').value);
+    const odd = parseFloat(document.getElementById('odd').value);
+    const terminal = document.getElementById('terminal');
+    
+    let output = "";
+    let possible_events = 0;
+
+    // Outer loop: Selected events 3 to 8
+    for (let selected_events = 3; selected_events <= 8; selected_events++) {
+        output += `Selected events = ${selected_events}\n`;
+        
+        possible_events = 0;
+        for (let i = 2; i <= selected_events; i++) {
+            possible_events += nCr(selected_events, i);
+        }
+        
+        output += `Possible outcome is = ${possible_events}\n`;
+        let stake_per_event = stake / possible_events;
+        output += `Stake per event is = ${stake_per_event.toFixed(6)}\n`;
+
+        // Inner loop: Loss events 0 to 6
+        for (let loss_event = 0; loss_event <= 6; loss_event++) {
+            let n_minus_loss = selected_events - loss_event;
+            
+            // Explicitly replicating your win2 through win8 variables
+            let win2 = nCr(n_minus_loss, 2) * stake_per_event * Math.pow(odd, 2);
+            let win3 = nCr(n_minus_loss, 3) * stake_per_event * Math.pow(odd, 3);
+            let win4 = nCr(n_minus_loss, 4) * stake_per_event * Math.pow(odd, 4);
+            let win5 = nCr(n_minus_loss, 5) * stake_per_event * Math.pow(odd, 5);
+            let win6 = nCr(n_minus_loss, 6) * stake_per_event * Math.pow(odd, 6);
+            let win7 = nCr(n_minus_loss, 7) * stake_per_event * Math.pow(odd, 7);
+            let win8 = nCr(n_minus_loss, 8) * stake_per_event * Math.pow(odd, 8);
+            
+            let win_amount = win2 + win3 + win4 + win5 + win6 + win7 + win8;
+            let profit = win_amount - stake;
+            
+            output += `Profit when loss is ${loss_event} = Rs.${profit.toFixed(6)}\n`;
+        }
+        output += `\n`;
+    }
+
+    terminal.innerText = output;
+}
+</script>
+
+</body>
 </html>
