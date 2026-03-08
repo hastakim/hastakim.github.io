@@ -122,8 +122,8 @@
             <input type="number" id="stake" value="100" placeholder="Enter stake">
         </div>
         <div class="input-group">
-            <label>Odds</label>
-            <input type="number" id="odd" step="0.1" value="2.0" placeholder="Enter odds">
+            <label>average_odds</label>
+            <input type="number" id="average_odd" step="0.1" value="2.0" placeholder="Enter average odds">
         </div>
     </div>
     
@@ -152,10 +152,10 @@ function nCr(n, r) {
 
 function runCalculator() {
     const stakeInput = document.getElementById('stake').value;
-    const oddInput = document.getElementById('odd').value;
+    const average_oddInput = document.getElementById('average_odd').value;
     
     const stake = parseFloat(stakeInput);
-    const odd = parseFloat(oddInput);
+    const average_odd = parseFloat(average_oddInput);
     const terminal = document.getElementById('terminal');
     
     let output = "";
@@ -180,13 +180,13 @@ function runCalculator() {
             let n_minus_loss = selected_events - loss_event;
             
             // Replicating manual win variables win2 to win8
-            let win2 = nCr(n_minus_loss, 2) * stake_per_event * Math.pow(odd, 2);
-            let win3 = nCr(n_minus_loss, 3) * stake_per_event * Math.pow(odd, 3);
-            let win4 = nCr(n_minus_loss, 4) * stake_per_event * Math.pow(odd, 4);
-            let win5 = nCr(n_minus_loss, 5) * stake_per_event * Math.pow(odd, 5);
-            let win6 = nCr(n_minus_loss, 6) * stake_per_event * Math.pow(odd, 6);
-            let win7 = nCr(n_minus_loss, 7) * stake_per_event * Math.pow(odd, 7);
-            let win8 = nCr(n_minus_loss, 8) * stake_per_event * Math.pow(odd, 8);
+            let win2 = nCr(n_minus_loss, 2) * stake_per_event * Math.pow(average_odd, 2);
+            let win3 = nCr(n_minus_loss, 3) * stake_per_event * Math.pow(average_odd, 3);
+            let win4 = nCr(n_minus_loss, 4) * stake_per_event * Math.pow(average_odd, 4);
+            let win5 = nCr(n_minus_loss, 5) * stake_per_event * Math.pow(average_odd, 5);
+            let win6 = nCr(n_minus_loss, 6) * stake_per_event * Math.pow(average_odd, 6);
+            let win7 = nCr(n_minus_loss, 7) * stake_per_event * Math.pow(average_odd, 7);
+            let win8 = nCr(n_minus_loss, 8) * stake_per_event * Math.pow(average_odd, 8);
             
             let win_amount = win2 + win3 + win4 + win5 + win6 + win7 + win8;
             let profit = win_amount - stake;
