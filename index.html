@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Journal Analysis</title>
+<style>
+/* ── RESET & BASE ── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f0f0f; color: #e0e0e0; line-height: 1.7; }
+
+/* ── LOGIN OVERLAY ── */
+#login-overlay {
+  position: fixed; inset: 0; background: #0a0a0a;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999; flex-direction: column;
+}
+#login-box {
+  background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px;
+  padding: 40px 36px; width: 340px; max-width: 92vw;
+}
+#login-box h2 { color: #fff; font-size: 1.2rem; margin-bottom: 6px; }
+#login-box p  { color: #666; font-size: 0.82rem; margin-bottom: 24px; }
+#login-box label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+#login-box input {
+  width: 100%; background: #111; border: 1px solid #333; border-radius: 5px;
+  color: #e0e0e0; padding: 10px 12px; font-size: 0.93rem; margin-bottom: 16px; outline: none;
+  transition: border-color .2s;
+}
+#login-box input:focus { border-color: #e74c3c; }
+#login-btn {
+  width: 100%; padding: 11px; background: #e74c3c; border: none; border-radius: 5px;
+  color: #fff; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: background .2s;
+}
+#login-btn:hover { background: #c0392b; }
+#login-error { color: #e74c3c; font-size: 0.82rem; margin-top: 12px; min-height: 18px; text-align: center; }
+#lock-icon { font-size: 2.5rem; margin-bottom: 20px; }
+
+/* ── MAIN CONTENT (hidden until login) ── */
+#main-content { display: none; padding: 24px; max-width: 960px; margin: 0 auto; }
+
+/* ── NAV TABS ── */
+#tab-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: #0f0f0f; border-bottom: 2px solid #1a1a1a;
+  display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 0 0 0; margin-bottom: 28px;
+}
+.tab-btn {
+  background: #1a1a1a; border: 1px solid #2a2a2a; border-bottom: none;
+  color: #aaa; padding: 8px 16px; border-radius: 6px 6px 0 0;
+  cursor: pointer; font-size: 0.82rem; transition: all .2s; white-space: nowrap;
+}
+.tab-btn:hover { background: #222; color: #fff; }
+.tab-btn.active { background: #e74c3c; border-color: #e74c3c; color: #fff; }
+.tab-btn#tab-all { background: #1e1e1e; color: #f39c12; }
+.tab-btn#tab-all.active { background: #f39c12; color: #111; border-color: #f39c12; }
+
+/* ── PART SECTIONS ── */
+.part-section { display: none; }
+.part-section.active { display: block; }
+
+/* ── PART HEADER DIVIDERS ── */
+.part-divider {
+  border: none; border-top: 3px solid #e74c3c;
+  margin: 40px 0 24px 0; position: relative;
+}
+.part-label {
+  background: #e74c3c; color: #fff; font-size: 0.78rem; font-weight: bold;
+  padding: 3px 14px; border-radius: 12px; display: inline-block;
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 20px;
+}
+
+/* ── SHARED CONTENT STYLES (from original files) ── */
+h1 { font-size: 1.5rem; color: #fff; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; margin-bottom: 24px; }
+h2 { font-size: 1.05rem; color: #e74c3c; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+h3 { font-size: 0.95rem; color: #f39c12; margin: 14px 0 4px 0; }
+.section { background: #1a1a1a; border-left: 4px solid #e74c3c; border-radius: 6px; padding: 18px 20px; margin-bottom: 20px; }
+.problem  { background: #1e1212; border-left: 4px solid #c0392b; }
+.solution { background: #121e12; border-left: 4px solid #27ae60; }
+.warning  { background: #1e1a10; border-left: 4px solid #f39c12; }
+.insight  { background: #12121e; border-left: 4px solid #8e44ad; }
+.new      { background: #121a1a; border-left: 4px solid #16a085; }
+.final    { background: #0d1a0d; border-left: 4px solid #27ae60; }
+p  { margin-bottom: 8px; font-size: 0.93rem; }
+ul { padding-left: 18px; margin-bottom: 8px; }
+ol { padding-left: 18px; margin-bottom: 8px; }
+li { font-size: 0.92rem; margin-bottom: 5px; }
+.tag { display: inline-block; background: #2c2c2c; color: #aaa; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; margin-bottom: 10px; }
+hr  { border: none; border-top: 1px solid #2a2a2a; margin: 24px 0; }
+.callout     { background: #1a1a2e; border: 1px solid #8e44ad; border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 0.9rem; color: #ccc; }
+.red-callout { background: #1e1010; border: 1px solid #e74c3c; border-radius: 6px; padding: 14px 18px; margin: 12px 0; font-size: 0.9rem; }
+.time-log    { background: #111; border: 1px solid #2a2a2a; border-radius: 4px; padding: 12px 16px; margin: 10px 0; font-family: monospace; font-size: 0.82rem; color: #aaa; line-height: 1.9; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.88rem; }
+th { background: #1e1e1e; color: #e74c3c; text-align: left; padding: 8px 12px; border-bottom: 2px solid #333; }
+td { padding: 8px 12px; border-bottom: 1px solid #222; vertical-align: top; }
+tr:nth-child(even) td { background: #161616; }
+.number { font-size: 2rem; font-weight: bold; color: #e74c3c; display: block; margin-bottom: 2px; }
+.stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin: 16px 0; }
+.stat-box  { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; padding: 14px; text-align: center; }
+.badge { display: inline-block; background: #e74c3c; color: #fff; font-size: 0.7rem; font-weight: bold; padding: 2px 8px; border-radius: 10px; margin-left: 8px; vertical-align: middle; }
+.green  { background: #27ae60; }
+.orange { background: #f39c12; color: #111; }
+
+/* ── LOGOUT BUTTON ── */
+#logout-btn {
+  position: fixed; bottom: 18px; right: 18px;
+  background: #1a1a1a; border: 1px solid #333; color: #aaa;
+  padding: 7px 16px; border-radius: 20px; font-size: 0.78rem;
+  cursor: pointer; z-index: 200; transition: all .2s;
+}
+#logout-btn:hover { background: #e74c3c; color: #fff; border-color: #e74c3c; }
+
+/* ── SCROLL TO TOP ── */
+#scroll-top {
+  position: fixed; bottom: 18px; left: 18px;
+  background: #1a1a1a; border: 1px solid #333; color: #aaa;
+  width: 38px; height: 38px; border-radius: 50%; font-size: 1rem;
+  cursor: pointer; z-index: 200; transition: all .2s;
+  display: flex; align-items: center; justify-content: center;
+}
+#scroll-top:hover { background: #333; color: #fff; }
+
+@media(max-width:600px){
+  .grid, .stat-grid { grid-template-columns: 1fr; }
+  #login-box { padding: 28px 20px; }
+  .tab-btn { font-size: 0.75rem; padding: 7px 11px; }
+  #main-content { padding: 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN OVERLAY ── -->
+<div id="login-overlay">
+  <div id="login-box">
+    <div id="lock-icon">🔒</div>
+    <h2>Private Journal</h2>
+    <p>This content is personal and protected. Enter credentials to continue.</p>
+    <label for="u-input">Username</label>
+    <input type="text" id="u-input" autocomplete="off" placeholder="Enter username">
+    <label for="p-input">Password</label>
+    <input type="password" id="p-input" autocomplete="off" placeholder="Enter password">
+    <button id="login-btn" onclick="attemptLogin()">Unlock</button>
+    <div id="login-error"></div>
+  </div>
+</div>
+
+<!-- ── MAIN CONTENT ── -->
+<div id="main-content">
+  <button id="logout-btn" onclick="logout()">🔒 Lock</button>
+  <button id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <!-- TAB NAV -->
+  <div id="tab-nav">
+    <button class="tab-btn active" id="tab-1" onclick="showTab(1)">Part 1 — Core Patterns</button>
+    <button class="tab-btn" id="tab-2" onclick="showTab(2)">Part 2 — Dreams</button>
+    <button class="tab-btn" id="tab-3" onclick="showTab(3)">Part 3 — Real Events</button>
+    <button class="tab-btn" id="tab-4" onclick="showTab(4)">Part 4 — Final Summary</button>
+    <button class="tab-btn" id="tab-all" onclick="showTab('all')">📄 All Parts</button>
+  </div>
+
+  <!-- PART 1 -->
+  <div class="part-section active" id="section-1">
+<h1>📓 Journal Analysis — Part 1 <span style="color:#888;font-size:0.85rem;font-weight:normal;">Your Patterns, Problems & Solutions</span></h1>
+
+<!-- CORE PATTERN -->
+<div class="section">
+  <h2>🔴 Core Pattern Running Your Life</h2>
+  <p><strong>Your brain is wired to repeat familiar pain and avoid unfamiliar success.</strong> You grew up with beating, neglect, being ignored — so your nervous system treats that as "normal." When success, love, or praise approaches, your brain panics because it doesn't know how that feels. You then self-sabotage to return to the familiar uncomfortable comfort zone.</p>
+  <p style="color:#f39c12;"><strong>Bottom line:</strong> You're not lazy. You're afraid. But fear is not an excuse — it's a problem to solve.</p>
+</div>
+
+<hr>
+
+<!-- PROBLEMS -->
+<h2 style="margin-bottom:12px;">🔴 Problems & Corresponding Solutions</h2>
+
+<!-- 1 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #1</span>
+  <h2>Coping Mechanism — You Escape Instead of Face</h2>
+  <ul>
+    <li>When stressed → TikTok, porn, roaming, daydreaming</li>
+    <li>When exam near → watch Dexter, short videos, sleep early</li>
+    <li>When alone → masturbate, then feel tired all day</li>
+    <li>When bored → fix others' devices, help neighbours, do anything except study</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>Name the escape: when you pick up the phone to avoid study, say out loud — <em>"I am escaping right now."</em> Don't lie to yourself.</li>
+      <li>Replace, don't fight: instead of trying to "not watch TikTok," replace that slot with a 25-min Pomodoro. Make study the easier option by closing apps.</li>
+      <li>Stop fapping in the morning — you already know it drains your entire day's energy. This is not optional.</li>
+      <li>When anxiety hits → take a 10-min walk outside, then come back and open the book. Not TikTok. Walk → Book.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 2 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #2</span>
+  <h2>Planning Without Doing — Dopamine from Plans, Not Work</h2>
+  <ul>
+    <li>You made a plan to finish 138 chapters. Read less than 20.</li>
+    <li>You keep changing study plans every 2-3 days.</li>
+    <li>Making a new plan feels like progress — it's not. It's procrastination with extra steps.</li>
+    <li>You assumed you'd study 11+ hours/day. You couldn't do even 4.</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li><strong>One fixed plan. No changes for 2 weeks minimum.</strong> Changing plans is an addiction you wrote about yourself.</li>
+      <li>Track what you actually did — not what you planned. Every night write: "I studied X hours today. Yes/No."</li>
+      <li>Start with 2 hours of study per day only. Don't plan 11 hours. You can't go from 0 to 11. Build the habit first.</li>
+      <li>Ask yourself before making any new plan: <em>"Have I followed my last plan fully? If not, why am I making a new one?"</em></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 3 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #3</span>
+  <h2>Assumption vs Reality — You Lie to Yourself to Escape Stress</h2>
+  <ul>
+    <li>You assumed you'd finish the syllabus — you didn't even start properly.</li>
+    <li>You told parents you gave online tests — you gave zero tests in the whole year.</li>
+    <li>You assumed you wouldn't repeat CEE mistakes — you repeated all of them.</li>
+    <li>You assumed studying 11h/day is realistic — it never was.</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li><strong>Before making any assumption, ask: "Have I ever done this successfully before? If not, why do I think I can now without changing anything?"</strong></li>
+      <li>Weekly self-check every Sunday: What did I plan? What did I actually do? What was the gap? Why?</li>
+      <li>Stop lying to parents. It keeps you in a fake comfort zone. Let the real pressure exist — it might help.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 4 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #4</span>
+  <h2>Overthinking & Fantasizing — Your Brain Entertains You Instead of Working</h2>
+  <ul>
+    <li>You think about winning Nobel Prize, saving people, fighting, becoming famous — daily.</li>
+    <li>You daydream about being a doctor, being appreciated, being a hero.</li>
+    <li>You think about girls for months (4 months on Ashika) until you realize it's not love — it's a need.</li>
+    <li>Overthinking makes you physically tired. You confused this with walking fatigue.</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>Your brain fantasizes because it's not getting real achievements. <strong>The only cure is real small wins.</strong> Study 1 chapter today. That stops fantasy better than willpower.</li>
+      <li>When fantasy starts, don't fight it — write it down in 1 sentence, close the notebook, open the book.</li>
+      <li>Reduce fantasy fuel: stop sad music, motivational reels, superhero content. Your journal says it directly — what you consume, your mind becomes.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 5 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #5</span>
+  <h2>Prioritizing Others' Tasks Over Your Own</h2>
+  <ul>
+    <li>Spent hours fixing neighbour's device — no benefit to you.</li>
+    <li>Searched exam center for cousin, guest house for neighbour.</li>
+    <li>Bypassed FRP till 2am when you had an exam coming.</li>
+    <li>Focused on classmate's work instead of study.</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>You help others to feel useful because you don't feel useful in your own life. Solve your own life first.</li>
+      <li>Hard rule: During study hours, say NO to all device repairs, errands, favors. After your goal is achieved — help freely.</li>
+      <li>Ask yourself: <em>"Will this task matter in 5 years? Will ignoring my study today matter in 5 years?"</em> Choose accordingly.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 6 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #6</span>
+  <h2>Trauma Controlling Your Actions</h2>
+  <ul>
+    <li>You were beaten severely as a child — with kitchen tools, slaps causing nosebleeds, feet to the face.</li>
+    <li>You felt neglected vs your younger brother who was treated with love.</li>
+    <li>You get violently angry thoughts about your mother near exam time — because she represents the pain/pressure loop.</li>
+    <li>You attract similar painful situations repeatedly because pain feels "familiar."</li>
+    <li>You suppress these feelings → they come out as rage, fantasy violence, self-sabotage.</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>You've already identified this brilliantly in your journal. Now act on it: <strong>Write specifically — "This anger toward mother is old pain, not present reality."</strong> Every time anger comes, write that sentence.</li>
+      <li>Create a clear separation: past you was beaten and helpless. Present you has choice and agency. They are different people.</li>
+      <li>Consider talking to a counselor or therapist — not because you're broken, but because carrying this alone is costing you years of your life. It's already cost you two CEE attempts.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 7 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #7</span>
+  <h2>Relationships & Girls — Used as Escape from Study</h2>
+  <ul>
+    <li>You admit: "I fall in love with girls as an excuse to avoid study pain."</li>
+    <li>You thought about Ashika for 4 months — it wasn't love, it was a need for peace/silence.</li>
+    <li>Late night chatting with her cost you study time during CEE prep.</li>
+    <li>You waste months on a girl who gives uncertainty, then feel suicidal when it hurts.</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>You already know: <em>"This kind of love is just an excuse to avoid pain (study)."</em> Believe your own journal.</li>
+      <li>Hard boundary: No late-night chatting. No entertaining new feelings during exam prep. This is not cruelty to yourself — it's respect.</li>
+      <li>When a girl enters your mind strongly, ask: <em>"What do I actually need right now that I'm not getting?"</em> — it's almost never the girl.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 8 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #8</span>
+  <h2>No Urgency for Exams — You Don't Feel It's Real Until It's Too Late</h2>
+  <ul>
+    <li>"I had zero interest and never felt urgency for the upcoming exam."</li>
+    <li>You wasted the entire year on sports watching, betting, daydreaming.</li>
+    <li>Even with 13 days left before CEE, you were still roaming at 14:39.</li>
+    <li>You avoided mock tests because you hadn't studied — which made studying even less likely.</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li><strong>Manufacture urgency artificially.</strong> Set a mock test every Sunday — no exceptions. Even if you've studied zero. Face the score. That discomfort is the only thing that will create urgency.</li>
+      <li>Write on a paper and stick it where you sleep: <em>"I wasted 2 full years. The third chance is not guaranteed."</em></li>
+      <li>Skipping mock tests because you haven't studied is like refusing to check your weight because you haven't dieted. It doesn't help — it makes it worse.</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<!-- SELF-HARM WARNING -->
+<div class="section warning">
+  <h2>⚠️ Suicidal Thoughts — This Needs Separate Attention</h2>
+  <p>Your journal mentions suicidal thoughts multiple times — near exam failure, during relationship pain, when feeling worthless. This is serious and not something a study plan fixes.</p>
+  <p><strong>When these thoughts come:</strong></p>
+  <ul>
+    <li>Do not be alone. Call someone — even a voice call to anyone.</li>
+    <li>Write what you're feeling immediately instead of acting on any impulse.</li>
+    <li>Nepal has iCall counseling available: <strong>9840021600</strong> (NIMH Nepal helpline).</li>
+    <li>This is not weakness. You've been carrying a heavy childhood alone for years.</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- SUMMARY TABLE -->
+<div class="section">
+  <h2>📋 Quick Daily Review Checklist</h2>
+  <p style="margin-bottom:12px;">Ask yourself these every morning:</p>
+  <ul>
+    <li>☐ Did I study yesterday? How many actual hours?</li>
+    <li>☐ What escape did I use? (TikTok / porn / roaming / helping others)</li>
+    <li>☐ Did I follow my plan or make a new one?</li>
+    <li>☐ Am I chasing a girl or fantasy right now to avoid study?</li>
+    <li>☐ Is my anger/stress old trauma or present reality?</li>
+    <li>☐ Did I give any mock test this week?</li>
+  </ul>
+</div>
+
+<p style="color:#555;font-size:0.8rem;margin-top:24px;">Analysis based strictly on PDF Part 1 content — no outside assumptions added.</p>
+  </div>
+
+  <!-- PART 2 -->
+  <div class="part-section" id="section-2">
+    <span class="part-label">Part 2 — Dreams &amp; Behavioural Patterns</span>
+<h1>📓 Journal Analysis — Part 2 <span style="color:#888;font-size:0.85rem;font-weight:normal;">Dreams, Patterns & Behavioural Insights</span></h1>
+
+<!-- WHAT THIS PART CONTAINS -->
+<div class="section insight">
+  <h2>🟣 What Part 2 Actually Contains</h2>
+  <p>Part 2 is almost entirely a <strong>dream log</strong> spanning 2078–2082 (roughly 2021–2026), with a small number of waking observations mixed in. The dreams are raw and unfiltered. Rather than analyzing each dream individually, what matters is the <strong>repeating patterns across hundreds of dreams</strong> — because those patterns directly mirror your waking problems from Part 1.</p>
+</div>
+
+<hr>
+
+<h2 style="margin-bottom:12px;">🔴 Key Patterns Found Across Your Dreams</h2>
+
+<!-- PATTERN 1 -->
+<div class="section problem">
+  <span class="tag">DREAM PATTERN #1</span>
+  <h2>Exam Anxiety Dreams — Appearing Constantly</h2>
+  <ul>
+    <li>Not finishing exams in time, forgetting admit cards, copying answers, unprepared</li>
+    <li>Dreams of getting 97 in CEE and waking up relieved it wasn't real</li>
+    <li>Studying subjects in dreams (mole concept, kinematics, biology) — your brain is processing guilt about not studying while awake</li>
+    <li>Bunking class in dreams mirrors real-life avoidance</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Tells You</h3>
+    <p>Your subconscious is working overtime on exam anxiety that your waking self is suppressing through TikTok and roaming. The stress doesn't disappear — it just moves into your sleep. The only thing that will stop these dreams is actual study progress. Nothing else.</p>
+  </div>
+</div>
+
+<!-- PATTERN 2 -->
+<div class="section problem">
+  <span class="tag">DREAM PATTERN #2</span>
+  <h2>Violence, Being Beaten, Powerlessness</h2>
+  <ul>
+    <li>Being tied up with metal, people trying to kill you, being chased</li>
+    <li>Beaten by teachers, classmates inserting syringes in your back without consent</li>
+    <li>Fighting back violently in dreams — beating a classmate until she dies, fighting supernatural enemies</li>
+    <li>Getting slapped, bullied, overlooked in crowds</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Tells You</h3>
+    <p>These are direct replays of your childhood trauma — being beaten by your mother and father without being able to fight back. In dreams, you <em>can</em> fight back. That's the release valve. But it's not healing — it's just pressure relief. The anger is still in you, unprocessed, and it leaks into how you treat yourself (self-sabotage, self-harm thoughts) and others (rage at mother near exams). This needs real processing — writing it out like you've been doing is good, but it's not enough on its own.</p>
+  </div>
+</div>
+
+<!-- PATTERN 3 -->
+<div class="section problem">
+  <span class="tag">DREAM PATTERN #3</span>
+  <h2>Girls & Relationships — Appearing in Almost Every Dream</h2>
+  <ul>
+    <li>Ashika, Gitika, Jipsum, Shruti, Drisya, Prayusha appear across years of dreams</li>
+    <li>In dreams you speak freely, hold hands, kiss, connect — things you freeze up on in real life</li>
+    <li>You dream of girls saying "I like you" or initiating — the opposite of what happens in waking life</li>
+    <li>Sexual dreams appear frequently — this is tied to suppressed urges and your porn/fap habit</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Tells You</h3>
+    <p>You already correctly identified this in Part 1: these feelings are projections of what you're missing — connection, being heard, being chosen. The dreams are compensation. The more you suppress in waking life (by not talking, not expressing), the more it floods your sleep. This won't stop until you build real social connection — not fantasy. And the porn/fap habit is feeding this loop directly. It creates artificial intimacy that makes real connection feel harder.</p>
+  </div>
+</div>
+
+<!-- PATTERN 4 -->
+<div class="section problem">
+  <span class="tag">DREAM PATTERN #4</span>
+  <h2>Being Ignored / Invisible in Groups</h2>
+  <ul>
+    <li>Classmates don't notice you, teachers don't acknowledge you</li>
+    <li>Friends greet others loudly but ignore you — exact mirror of the real SEE graduation day event from Part 1</li>
+    <li>You try to impress Ashika but she stays still with no reaction</li>
+    <li>Sitting in groups but remaining silent, not contributing</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Tells You</h3>
+    <p>Your need to be seen and acknowledged is your biggest emotional driver — and it's been unmet since childhood. Your fantasy of winning Nobel Prizes, saving people, being a doctor everyone admires — it all traces back to this single wound: <em>I want to be noticed and valued.</em> The good news: this is actually a powerful motivator IF you point it at real work. Use the hunger for recognition to fuel study, not fantasy.</p>
+  </div>
+</div>
+
+<!-- PATTERN 5 -->
+<div class="section problem">
+  <span class="tag">DREAM PATTERN #5</span>
+  <h2>Heroism & Saving Others — Recurring Fantasy</h2>
+  <ul>
+    <li>Saving people from zombies, fighting superbeings, being a doctor saving lives</li>
+    <li>Protecting friends from dogs, shielding others from danger</li>
+    <li>Forgiving enemies (letting "mice" go free after defeating them)</li>
+    <li>Being the one who steps up when no one else does</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Tells You</h3>
+    <p>You have a genuine drive to be useful and impactful. That's not delusion — it's a real value. But right now it only exists in dreams and fantasy because you haven't built the foundation (skills, degree, discipline) to express it in reality. The hero in your dreams is who you want to be. The person roaming at 14:39 before an exam is who you currently are. Close that gap — one study session at a time.</p>
+  </div>
+</div>
+
+<!-- PATTERN 6 -->
+<div class="section problem">
+  <span class="tag">DREAM PATTERN #6</span>
+  <h2>Being Caught / Exposed / In Trouble for Breaking Rules</h2>
+  <ul>
+    <li>Hiding mobile from principal, running from police, caught bunking</li>
+    <li>Making mistakes in exams and being blamed unfairly</li>
+    <li>Being punished for things that weren't your fault</li>
+    <li>Anxiety about being discovered doing something wrong</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Tells You</h3>
+    <p>This comes directly from childhood — you were punished for mistakes (and non-mistakes) harshly, unpredictably. Now your nervous system is hypervigilant. In waking life this shows up as: avoiding mock tests (fear of seeing the real score), lying to parents about studying, not confronting situations directly. You avoid accountability because accountability was never safe in your childhood. Now it needs to be — on your own terms.</p>
+  </div>
+</div>
+
+<hr>
+
+<!-- WAKING INSIGHTS FROM PART 2 -->
+<h2 style="margin-bottom:12px;">💡 Waking Observations from Part 2 (Non-Dream)</h2>
+
+<div class="section">
+  <span class="tag">INSIGHT #1</span>
+  <h2>Planning Addiction — Confirmed Again</h2>
+  <p>You wrote it clearly: <em>"My plans and Nepal's politics are same — both keep changing."</em> And: <em>"The time I spend making plans should be used in studying."</em></p>
+  <div class="callout">You already know the solution. You wrote it yourself: make one plan, follow it for one month, analyze at the end. <strong>Why haven't you done this?</strong> Because starting the plan means facing the discomfort of actual work. Planning is comfortable. Doing is not.</div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #2</span>
+  <h2>Distraction = Suppression Signal</h2>
+  <p>You identified this correctly: <em>"When you can't focus, there's a high chance you're suppressing something."</em> Examples you listed: controlling urges to watch adult content, avoiding phone, internal health issues.</p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ Action</h3>
+    <p>When you can't focus, don't fight the distraction directly. Ask: <em>"What am I avoiding right now? What feeling am I running from?"</em> Write the answer down. That 2-minute journal entry often breaks the avoidance loop better than willpower.</p>
+  </div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #3</span>
+  <h2>Sleep Controls Self-Control</h2>
+  <p>You wrote: <em>"Sleep is important because it gives you control over yourself. When you lack sleep you lose control and repeat regular (bad) activity."</em></p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ Action</h3>
+    <p>This is neuroscience fact — your prefrontal cortex (decision-making, self-control) is the first thing impaired by poor sleep. Your pattern of sleeping late due to games/chatting, then waking up late and fapping, then having no energy — this chain starts with sleep. Fix sleep first. Hard cutoff: phone down at 10pm, sleep by 10:30.</p>
+  </div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #4</span>
+  <h2>Content Consumption Drains Energy</h2>
+  <p>You wrote: <em>"The more you consume content from the internet, the more energy you invest in it — by evening you're exhausted."</em> And: <em>"Consume less content to save energy for study."</em></p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ Action</h3>
+    <p>You have a working hypothesis here. Test it: for 3 days, limit internet content to 30 minutes total per day. Track your energy and study hours. You'll see the difference. Your brain is burning mental fuel on TikTok that should go to chapters.</p>
+  </div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #5</span>
+  <h2>Mother's Voice as a Study Blocker</h2>
+  <p>You wrote: <em>"Why I can't study since class 7-12 — because of her. She shouts all the time, I can't endure it, I leave the house and roam. All the time goes there and I feel tired."</em></p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ Action</h3>
+    <p>This is real and valid. Her voice triggers your nervous system into fight-or-flight — a trauma response, not weakness. Practical solutions: study with noise-cancelling earphones or lo-fi music, find a quiet library or café, study early morning before the house gets loud. Don't wait for the environment to be perfect — control what you can.</p>
+  </div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #6</span>
+  <h2>Your Ideal Day Plan (Already Written by You)</h2>
+  <p>You wrote a solid ideal day schedule in this file: 5am wake, meditation, shadow work, study blocks with 15-30 min breaks, meals structured in. It's reasonable on paper.</p>
+  <div class="callout" style="border-color:#e74c3c;">
+    <strong>Hard truth:</strong> This is your 10th+ study plan. The plan isn't the problem. Execution is. Stop tweaking the plan. Follow the one you have. Even if you only hit 40% of it, that's better than 0% of a perfect plan.
+  </div>
+</div>
+
+<hr>
+
+<!-- CAUSES OF NOT STUDYING -->
+<div class="section">
+  <h2>📋 Your Own List: Causes of Not Studying (From Part 2)</h2>
+  <p>You identified these yourself — they're accurate:</p>
+  <ul>
+    <li>Daydreams and overthinking while walking</li>
+    <li>Worrying about the future</li>
+    <li>Stress and unprocessed anger</li>
+    <li>Not doing morning routine (biology not supporting you)</li>
+    <li>Not drinking enough water</li>
+    <li>Late night chatting and sleep deprivation</li>
+    <li>Content overconsumption draining mental energy</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Priority Fix Order</h3>
+    <ol style="padding-left:18px;">
+      <li style="margin-bottom:6px;"><strong>Sleep by 10:30pm</strong> — fixes morning routine, energy, self-control</li>
+      <li style="margin-bottom:6px;"><strong>No fap in morning</strong> — directly recovers daily energy</li>
+      <li style="margin-bottom:6px;"><strong>Reduce content to 30min/day</strong> — stops mental exhaustion</li>
+      <li style="margin-bottom:6px;"><strong>Walk only with purpose, not to think</strong> — stops overthinking loop</li>
+      <li style="margin-bottom:6px;"><strong>Drink water regularly</strong> — even this small thing you noted yourself</li>
+    </ol>
+  </div>
+</div>
+
+<hr>
+
+<!-- WHAT PART 2 ADDS TO PART 1 -->
+<div class="section insight">
+  <h2>🟣 What Part 2 Adds Beyond Part 1</h2>
+  <ul>
+    <li><strong>Your dreams confirm what you already wrote in waking entries</strong> — the patterns are consistent, not random. Your subconscious and conscious mind agree on the problems.</li>
+    <li><strong>The trauma is older and deeper than you may realize</strong> — these dream patterns go back to 2078 (2021). This isn't a recent issue caused by exam pressure. It's a long-standing wound.</li>
+    <li><strong>You have the capacity for insight</strong> — the dream interpretations you wrote yourself (anima projection, exam anxiety, suppression) are accurate. The problem is never understanding; it's always the gap between understanding and action.</li>
+  </ul>
+</div>
+
+<p style="color:#555;font-size:0.8rem;margin-top:24px;">Analysis based strictly on PDF Part 2 content — no outside assumptions added. Ready for Part 3.</p>
+  </div>
+
+  <!-- PART 3 -->
+  <div class="part-section" id="section-3">
+    <span class="part-label">Part 3 — Real-Life Events &amp; Deeper Patterns</span>
+<h1>📓 Journal Analysis — Part 3 <span style="color:#888;font-size:0.85rem;font-weight:normal;">New Problems, Real-Life Events & Deeper Patterns</span></h1>
+
+<!-- WHAT'S NEW IN PART 3 -->
+<div class="section new">
+  <h2>🟢 What Part 3 Adds That Parts 1 & 2 Didn't</h2>
+  <p>Part 3 contains more dreams but also crucial <strong>real-life events and waking observations</strong> not seen before: a physical assault by a drunk man, gambling losses of 40,000 rupees, actual time logs of your day, a girl you're currently emotionally caught up in, exam mistakes during actual tests, and some of your most honest self-observations yet. These need direct attention.</p>
+</div>
+
+<hr>
+<h2 style="margin-bottom:12px;">🔴 New Problems Found in Part 3</h2>
+
+<!-- PROBLEM: GAMBLING -->
+<div class="section problem">
+  <span class="tag">PROBLEM #1 — NEW</span>
+  <h2>Gambling — You've Lost 40,000 Rupees</h2>
+  <p>You wrote it directly: <em>"Till now I have lost 40k."</em> You also identified the mechanism yourself: winning creates overconfidence, overconfidence makes you ignore facts, you lose more. You keep chasing losses by betting bigger.</p>
+  <div class="red-callout">
+    This is not a minor hobby. 40,000 rupees is real money — money that could have paid for coaching, books, or months of study support. And you're a student who needed a scholarship for CEE. This is directly competing with your future.
+  </div>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li><strong>Delete the betting app. Now. Not tomorrow.</strong> You already know "putting a limit" doesn't work — you said so yourself. Limits don't work for addictive behavior. Removal does.</li>
+      <li>The dopamine from betting is the same loop as planning and TikTok — a shortcut to feeling something without doing real work. It's the same enemy.</li>
+      <li>Every rupee you gamble is a vote against your own future. You wrote you want to be a software engineer at Google. That person doesn't have a betting app on his phone.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PROBLEM: PHYSICAL ASSAULT -->
+<div class="section problem">
+  <span class="tag">PROBLEM #2 — NEW</span>
+  <h2>Physical Assault — And What It Revealed About You</h2>
+  <p>On 2082/05/21, a drunk man beat you badly — face, eye, head. You lost consciousness. No one around helped. You came home and fantasized violently about revenge for a long time.</p>
+  <p>Then you did something important: you used Gemini to understand why you couldn't lift your hand to defend yourself. The answer you found — <strong>learned helplessness from parental beatings</strong> — is exactly correct.</p>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Means</h3>
+    <ul>
+      <li>Your body literally froze because your nervous system learned in childhood: <em>"When someone bigger hurts me, I cannot fight back — fighting back makes it worse."</em> That's not cowardice. That's a trauma response wired in from years of being beaten by your parents.</li>
+      <li>The violent revenge fantasies afterward are your nervous system's way of processing the helplessness — same pattern as the fight-back dreams.</li>
+      <li>This is one more piece of evidence that the childhood trauma is not just emotional — it's physically stored in how your body responds to threat. This really does need professional help to process, not just journaling.</li>
+      <li>Practically: learn basic self-defense not for revenge, but to rebuild a sense of bodily safety and agency. That matters for confidence in all areas of life.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PROBLEM: CURRENT GIRL -->
+<div class="section problem">
+  <span class="tag">PROBLEM #3 — NEW</span>
+  <h2>Current Girl (SK) — You're In It Again, Right Now</h2>
+  <p>You wrote in June 2025: <em>"I feel really bad, stressed, thinking about her and study. I don't know what I'll do in future."</em> She approached you, you roamed till 12am, watched movies till 3am. You already know she has a boyfriend. Your gut told you to leave — you didn't.</p>
+  <div class="red-callout">
+    You've written this exact script before. Different name, same story. Girl appears → you get emotionally hooked → late nights → study collapses → you feel suicidal or hopeless → eventually you move on → you write that it was an excuse to avoid study. You already know how this ends.
+  </div>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>Your gut said: <em>"Never talk to her. Don't even look at her."</em> Your gut was right. Listen to it this time.</li>
+      <li>She has a boyfriend. Continuing this is not romantic — it's self-punishment disguised as hope.</li>
+      <li>Hard rule: no contact. No checking her social media. Not even passive watching. Complete cut-off — you already know why from Part 1.</li>
+      <li>Every hour you spend thinking about her is an hour stolen from CEE prep. You don't have extra hours.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PROBLEM: LYING -->
+<div class="section problem">
+  <span class="tag">PROBLEM #4 — NEW</span>
+  <h2>Lying — To Others and to Yourself</h2>
+  <p>You wrote: <em>"I noticed when I lie, from inside I always wish I had told the truth. This lie affects me a lot."</em> You identified why you lie: to cover yourself, to appear responsible and stable.</p>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>Lying to parents about studying costs you the one thing that could create urgency — real accountability. When you lie and say you're studying, the pressure disappears and so does the motivation.</li>
+      <li>Try one week of telling the truth to at least one person about your actual study hours. See what happens. The discomfort is productive.</li>
+      <li>You already know this: <em>"Instead of lying, just tell the truth."</em> Your own words. Follow them.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PROBLEM: EXAM MISTAKES DURING ACTUAL TESTS -->
+<div class="section problem">
+  <span class="tag">PROBLEM #5 — NEW</span>
+  <h2>Specific Exam Mistakes You Identified Yourself</h2>
+  <p>This is valuable — you listed your actual in-exam failures:</p>
+  <ul>
+    <li>Explaining to friends before exam drains you and makes you sad going in</li>
+    <li>Worrying about the exam instead of last-minute revision</li>
+    <li>Doing MCQs first → loses confidence → rest of exam suffers</li>
+    <li>Waking up late → body pain → can't focus</li>
+    <li>No drawing practice → lose marks on diagram questions</li>
+    <li>Only reading, no writing practice → can't write properly in exam</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution — Exam Day Protocol</h3>
+    <ol>
+      <li><strong>No explaining concepts to friends the day before or morning of exam.</strong> Say "I need to focus" and walk away.</li>
+      <li><strong>Morning of exam:</strong> wake early, light revision only, no new topics.</li>
+      <li><strong>In exam:</strong> start with questions you know, not MCQs first. Build confidence early.</li>
+      <li><strong>From now:</strong> practice writing answers and drawing diagrams weekly — not just reading. CEE tests your hand, not just your brain.</li>
+      <li><strong>Sleep the night before:</strong> non-negotiable. Body pain from late sleep directly tanks your performance.</li>
+    </ol>
+  </div>
+</div>
+
+<hr>
+
+<!-- YOUR ACTUAL TIME LOG ANALYSIS -->
+<div class="section warning">
+  <h2>⚠️ Your Real Day — Time Log Audit (2081/05/31)</h2>
+  <p>You logged one full day honestly. Here's what it actually shows:</p>
+  <div class="time-log">
+5:00–6:00 → Waking + self-talk + mobile (1hr, 15min productive)
+6:00–8:00 → Roaming + breakfast + mobile (2hrs, 0% study)
+8:00–9:35 → Python learning (1hr 35min ✓)
+9:35–10:35 → Mobile + walking (1hr, 0% study)
+10:35–12:45 → Futurama + homework (2hrs 10min, mixed)
+12:45–14:06 → Meal + Futurama (1hr 20min, 0% study)
+14:06–14:34 → Mobile + fap (28min, negative impact)
+14:34–16:00 → Kaj bottom (1hr 26min ✓)
+  </div>
+  <p><strong>Honest count:</strong> ~3 hours of actual productive work out of 11 hours of waking time. The rest was roaming, Futurama, mobile, and fap.</p>
+  <p style="color:#f39c12; margin-top:8px;"><strong>This is the gap between your ideal day plan (10+ study hours) and your actual day (3 hours).</strong> You're not failing because of bad luck or circumstances. You're failing because of how you spend time hour by hour. This is fixable — but only if you're honest about it.</p>
+</div>
+
+<hr>
+
+<!-- KEY NEW INSIGHTS FROM PART 3 -->
+<h2 style="margin-bottom:12px;">💡 Important Waking Insights From Part 3</h2>
+
+<div class="section">
+  <span class="tag">INSIGHT #1</span>
+  <h2>Daydream Origin — You Nailed It</h2>
+  <p>You wrote: <em>"Most of my thoughts are replays of videos I've watched. I automatically put myself in the main character's shoes. This is pleasurable but fantasy. In reality I don't do even 1% of the work to achieve those things."</em></p>
+  <p>And your own solution: <em>"Next time a scene appears — remind myself: 'This is not my thought; it's a borrowed script from a video.'"</em></p>
+  <div class="callout">This is one of the most accurate self-observations in all three PDFs. The fix is simple and you already wrote it: <strong>catch the borrowed script, name it, return to reality.</strong> The problem is you wrote this insight and then kept watching the same content that generates the scripts. Less content = less fantasy = more real action.</div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #2</span>
+  <h2>Procrastination Root Cause — Also Correct</h2>
+  <p>You wrote: <em>"Brain gets tired just by thinking about the task. You should just start doing the task."</em></p>
+  <p>This is called "task aversion" — the anticipation of a hard task activates the same brain region as physical pain. The relief comes from starting, not from planning or delaying.</p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ Action</h3>
+    <p>Two-minute rule: commit to just opening the book and reading one paragraph. That's it. Once started, the pain signal drops and you continue. The hardest moment is always the 10 seconds before you begin.</p>
+  </div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #3</span>
+  <h2>Reward Timing — You Got This Right</h2>
+  <p>You wrote: <em>"Reward shouldn't be given at night but at morning or afternoon — because at night I lust for reward and leave my duty."</em></p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ Action</h3>
+    <p>Structure rewards in the middle of the day — after a solid morning study block. Never as a nighttime activity. Night rewards (games, videos, late chats) consistently destroy the next morning's routine. You've proven this to yourself multiple times.</p>
+  </div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #4</span>
+  <h2>Mother's Core Defect — You Identified It Precisely</h2>
+  <p>You wrote: <em>"She wants everything perfect. Can't commit a tiny mistake. No matter how much work you've done, she won't notice — but the mistake will be noticed."</em></p>
+  <div class="callout">
+    This is called <strong>conditional approval</strong> — love and attention only when you perform perfectly. Growing up under this trains you to: avoid being evaluated (skip mock tests), hide failures (lie about studying), and feel worthless when you make mistakes. You're still living under this psychological rule even when she's not in the room. <strong>The internal critic you carry is her voice.</strong> Recognizing that is step one to separating it from your own voice.
+  </div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #5</span>
+  <h2>Study Before Bed — You Found Something That Works</h2>
+  <p>You wrote: <em>"Studying before going to bed is beneficial — before sleeping, anything I read goes directly into the brain. I even get dreams related to study."</em></p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ Action</h3>
+    <p>This is neuroscience fact — sleep consolidates memory. The last thing you review before sleep gets processed during REM. Replace late-night phone/game/chat with 30–45 minutes of biology or chemistry reading. This alone could improve retention significantly without adding extra study hours.</p>
+  </div>
+</div>
+
+<hr>
+
+<!-- PATTERNS CONFIRMED ACROSS ALL 3 PARTS -->
+<div class="section insight">
+  <h2>🟣 Patterns Now Confirmed Across All 3 Parts</h2>
+  <p>After three PDFs, these are the non-negotiable truths about your situation:</p>
+  <ul>
+    <li><strong>Your core problem is not intelligence or ability.</strong> You dream about physics, chemistry, biology — your brain processes academic content even while sleeping. The knowledge goes in. Discipline to sit with it while awake is the missing piece.</li>
+    <li><strong>Every escape route is the same enemy:</strong> TikTok, porn, fap, roaming, betting, helping others, late-night chat, fantasy, planning — all dopamine shortcuts that replace the discomfort of real work.</li>
+    <li><strong>You have written your own solutions, correctly, dozens of times.</strong> The problem has never been lack of insight. It has always been the execution gap.</li>
+    <li><strong>The trauma is the root.</strong> Everything else — the avoidance, the fantasy, the learned helplessness, the need for approval, the rage at your mother — branches from the same root: you were hurt repeatedly as a child with no escape and no protection. That wiring runs deep and it runs your life more than you realize.</li>
+    <li><strong>Time is running out for CEE.</strong> You've said this yourself. Two attempts gone. A third is not guaranteed to be available or affordable forever.</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- MASTER DAILY CHECKLIST -->
+<div class="section solution">
+  <h2>✅ Master Daily Review — All 3 Parts Combined</h2>
+  <p>Stick this somewhere visible. Read every morning:</p>
+  <ol>
+    <li>Did I sleep before 10:30pm last night? Y/N</li>
+    <li>Did I fap this morning? If yes — why? What was I avoiding?</li>
+    <li>What is my actual study target today? (Hours, not subjects)</li>
+    <li>Am I following my existing plan or making a new one? (If new → stop.)</li>
+    <li>Is the betting app still on my phone? (If yes → delete it now.)</li>
+    <li>Am I thinking about SK or any girl right now? → Name what you actually need.</li>
+    <li>What content did I consume today? Under 30 minutes? Y/N</li>
+    <li>Did I study before bed last night? Y/N</li>
+    <li>Did I give a mock test this week? Y/N — if no, schedule one for Sunday.</li>
+    <li>Am I lying to anyone about my study progress? → Tell the truth today.</li>
+  </ol>
+</div>
+
+<p style="color:#555;font-size:0.8rem;margin-top:24px;">Analysis based strictly on PDF Part 3 content. Send Part 4 when ready.</p>
+  </div>
+
+  <!-- PART 4 -->
+  <div class="part-section" id="section-4">
+    <span class="part-label">Part 4 — Girl History, Root Causes &amp; Master Summary</span>
+<h1>📓 Journal Analysis — Part 4 + Master Summary <span style="color:#888;font-size:0.85rem;font-weight:normal;">Final Patterns & Complete Action Plan</span></h1>
+
+<!-- PART 4 OVERVIEW -->
+<div class="section insight">
+  <h2>🟣 What Part 4 Contains</h2>
+  <p>Part 4 has more time logs, your complete crush/girl history from class 3 onward, deeper self-reflection on porn and daydream roots, a mirror moment where you realize you've become your mother, and important observations about your own psychology that deserve direct confrontation.</p>
+</div>
+
+<hr>
+<h2 style="margin-bottom:12px;">🔴 New Problems & Insights From Part 4</h2>
+
+<!-- SECOND TIME LOG -->
+<div class="section warning">
+  <span class="tag">TIME LOG AUDIT #2 — 2081/06/05</span>
+  <h2>Another Full Day — Same Pattern</h2>
+  <div class="time-log">
+8:09–10:00  → FB account exploitation + mobile (1hr 51min, 0% study)
+10:00–10:45 → Water bottle + Python (45min ✓)
+10:45–11:00 → Mobile (15min wasted)
+11:00–11:40 → Roaming (40min)
+11:40–13:00 → Homework (1hr 20min ✓)
+13:00–14:40 → Meal + Futurama (1hr 40min, 0% study)
+14:40–16:00 → Kaj Bottom (1hr 20min ✓)
+16:00–18:00 → Roaming + doing nothing at factory (2hrs, 0%)
+18:00–19:00 → Movie + fap (1hr, negative)
+19:00–20:00 → Roaming again (1hr, 0%)
+20:00–21:15 → Homework (1hr 15min ✓)
+  </div>
+  <p><strong>Actual productive work: ~4.5 hours out of ~13 waking hours.</strong> The rest — roaming, Futurama, Facebook, fap, doing nothing at a factory — consumed more time than study. Two days logged across Parts 3 and 4, same result both times.</p>
+  <div class="red-callout" style="margin-top:10px;">This is your real baseline. Not the 10-hour plan. Not the ideal schedule. <strong>4 hours.</strong> Any goal you set needs to start from this honest number and build up — not from a fantasy of 11 hours that has never happened once.</div>
+</div>
+
+<!-- GIRL HISTORY -->
+<div class="section problem">
+  <span class="tag">PROBLEM #1 — CONFIRMED & EXPANDED</span>
+  <h2>13 Girls Since Class 3 — The Full Pattern</h2>
+  <p>You listed your complete crush history: Sonika (class 3–8), Bimala, Salina, Sharmila, Rita, Gitika, Jipsum, Vishaka, Kriti, Aakriti, Shruti, Pratiksha, Ashika. That's 13 names across roughly 10 years.</p>
+  <div class="callout">
+    Look at what you wrote about each one: <em>anima projection, avoiding study pain, projecting my weakness, she speaks less, she is similar to me, I feel something when I see her eyes.</em> You wrote the same diagnosis for almost every single one. <strong>This is not love recurring. It is the same escape mechanism recurring with a new face.</strong>
+  </div>
+  <p>The most honest thing you wrote: <em>"Avoiding the pain of study"</em> and <em>"projecting my weakness on her"</em> — for Ashika specifically. You know this. You've known it for years.</p>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Means Practically</h3>
+    <ul>
+      <li>The next girl who appears in your mind while you're supposed to be studying is not a person — she is a symptom. She is stress in disguise.</li>
+      <li>You don't need to avoid girls forever. You need to build the foundation (career, stability, self-respect) first. Then real connection becomes possible. Right now you're trying to get love before you've built the self that can sustain it.</li>
+      <li>When a girl enters your mind during study: write her name and "escape mechanism" on paper. That's it. Then return to the page.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PORN & DAYDREAM ROOTS -->
+<div class="section problem">
+  <span class="tag">PROBLEM #2 — ROOT CAUSES IDENTIFIED BY YOU</span>
+  <h2>Why You Watch Porn & Daydream — Your Own Analysis</h2>
+  <p>You wrote this clearly:</p>
+  <ul>
+    <li><strong>Porn:</strong> boredom, loneliness, curiosity, and most importantly — <em>stress (mainly from study)</em></li>
+    <li><strong>Daydream:</strong> escape reality, shadow projection, and again — <em>stress (mainly from study)</em></li>
+  </ul>
+  <div class="callout">
+    Both roads lead to the same place: <strong>study stress is the trigger.</strong> You don't have a porn problem or a daydream problem in isolation. You have a study-avoidance problem that expresses itself through porn and daydream. Fix the avoidance — through consistent small study sessions — and both symptoms reduce naturally. Willpower alone against porn or fantasy never works long-term. Removing the root cause (unmanaged study stress) does.
+  </div>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ The Chain to Break</h3>
+    <ol>
+      <li>Study feels hard/stressful → brain seeks escape</li>
+      <li>Escape = porn, TikTok, roaming, daydream, girl obsession</li>
+      <li>Escape gives dopamine → study feels even harder by comparison</li>
+      <li>More stress → more escape → less study → more stress</li>
+    </ol>
+    <p><strong>Break it at step 1:</strong> make study sessions shorter and less threatening. 25 minutes with a timer. Stop before the stress builds. That's it. You don't need discipline of steel — you need to never let the stress get big enough to trigger the escape.</p>
+  </div>
+</div>
+
+<!-- YOU ARE YOUR MOTHER -->
+<div class="section problem">
+  <span class="tag">PROBLEM #3 — THE HARDEST TRUTH IN ALL 4 PDFs</span>
+  <h2>You Are Becoming Your Mother</h2>
+  <p>You wrote this yourself, and it took courage: <em>"Even I don't accept it — I am her. I shout like her. I speak rough words like her. I also keep looking for mistakes in others' work. I even look for validation from everybody."</em></p>
+  <div class="red-callout">
+    This is one of the most important things in all four PDFs. The person you resent most — whose voice triggers you, whose behavior you hate — is the person you are slowly becoming. This is not an insult. It is how unprocessed trauma works: you either repeat what was done to you, or you consciously choose to become different. Right now you are repeating it, even while hating it.
+  </div>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What To Do With This</h3>
+    <ul>
+      <li>The fact that you can see it means you can change it. Most people never get this far.</li>
+      <li>Every time you notice yourself shouting, looking for others' mistakes, or seeking validation — pause and say: <em>"This is her pattern, not mine. I choose differently."</em> You won't always succeed. But you'll succeed more often than if you never named it.</li>
+      <li>Stop hating her and start understanding her: she was probably also raised with harsh perfectionism and no emotional support. That doesn't excuse what happened to you — but it breaks the cycle of pure rage, which is currently costing you energy.</li>
+      <li>This specifically needs a therapist or counselor. Not because you're broken — but because breaking a generational pattern alone is extremely hard. You need someone to reflect it back to you in real time.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- VALIDATION SEEKING -->
+<div class="section problem">
+  <span class="tag">PROBLEM #4</span>
+  <h2>Validation Addiction — You Say Yes to Everything to Feel Useful</h2>
+  <p>You wrote: <em>"I easily say yes to anything because I want to feel like I also matter in this society, I am useful. I have to practice saying no."</em></p>
+  <ul>
+    <li>Repairing neighbours' devices for hours → need to feel needed</li>
+    <li>Helping classmates in exams when you haven't studied yourself → need to feel capable</li>
+    <li>Searching exam centers for cousins → need to feel useful</li>
+    <li>Saying yes to late-night roaming with the girl → need to feel chosen</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>Every time you say yes to someone else's need during study hours, you are saying no to yourself. That trade is not worth it.</li>
+      <li>Practice this exact sentence: <em>"I can't right now, I'm studying."</em> Seven words. Say them once. Don't explain further — explanations invite negotiation.</li>
+      <li>Real usefulness comes from becoming capable, not from endlessly serving others while your own life stalls. The most useful version of you is the one who actually cracks CEE and builds skills.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- MONOLOGUE BENEFIT -->
+<div class="section insight">
+  <span class="tag">INSIGHT — WHAT ACTUALLY WORKS FOR YOU</span>
+  <h2>Self-Monologue Works — You Proved It</h2>
+  <p>You wrote: <em>"I talked with myself about shadow, mistakes, and desires for just 6 minutes — and I was in control and doing productive tasks like reading botany, which was hard yesterday."</em></p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ This Is Your Most Effective Tool — Use It Daily</h3>
+    <ul>
+      <li>6 minutes of honest self-talk before study = better than 30 minutes of planning or motivation videos.</li>
+      <li>What to cover: what am I avoiding right now? What do I actually need? What's the smallest thing I can do in the next 25 minutes?</li>
+      <li>You already know this works. You wrote it. Now make it a non-negotiable morning habit — before you touch your phone.</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<!-- MASTER SUMMARY — ALL 4 PARTS -->
+<h2 style="margin-bottom: 16px; font-size: 1.2rem; color: #fff;">📊 MASTER SUMMARY — ALL 4 PDFs COMBINED</h2>
+
+<div class="stat-grid">
+  <div class="stat-box"><span class="number">13</span><span style="font-size:0.8rem;color:#aaa;">Girls used as escape since class 3</span></div>
+  <div class="stat-box"><span class="number">2</span><span style="font-size:0.8rem;color:#aaa;">CEE attempts wasted</span></div>
+  <div class="stat-box"><span class="number">40k</span><span style="font-size:0.8rem;color:#aaa;">Rupees lost to betting</span></div>
+  <div class="stat-box"><span class="number">~4h</span><span style="font-size:0.8rem;color:#aaa;">Actual study per day (real)</span></div>
+  <div class="stat-box"><span class="number">4+</span><span style="font-size:0.8rem;color:#aaa;">Years of journals with same insights, no execution</span></div>
+  <div class="stat-box"><span class="number">1</span><span style="font-size:0.8rem;color:#aaa;">Core problem underneath everything</span></div>
+</div>
+
+<!-- THE ONE CORE PROBLEM -->
+<div class="section final">
+  <h2>✅ The One Core Problem Underneath Everything</h2>
+  <p>After reading all four PDFs, every problem — the avoidance, the fantasy, the girl obsessions, the gambling, the planning addiction, the rage, the fap habit, the help-seeking, the validation-chasing — traces back to <strong>one unresolved core:</strong></p>
+  <p style="font-size:1.05rem; color:#f39c12; margin: 14px 0;"><strong>You were hurt as a child with no protection, no escape, and no emotional support. Your brain learned that effort leads to pain, not reward. So it now seeks any shortcut that avoids effort and provides instant relief.</strong></p>
+  <p>Everything else is downstream of that. You are not lazy, stupid, or weak. You are running an old survival program that made sense in childhood but is destroying your adult life.</p>
+  <p>The program can be overwritten — but only through <strong>repeated real action</strong>, not more insight. You have enough insight. You have had enough insight for years.</p>
+</div>
+
+<!-- MASTER TABLE -->
+<div class="section">
+  <h2>📋 Complete Problem → Solution Reference Table</h2>
+  <table>
+    <tr><th>Problem</th><th>Root Cause</th><th>Action</th></tr>
+    <tr><td>Planning instead of doing</td><td>Planning gives dopamine without discomfort</td><td>One plan, no changes for 2 weeks. Track actual hours done.</td></tr>
+    <tr><td>Morning fap → no energy all day</td><td>Stress + loneliness + boredom trigger</td><td>No fap before 6pm. Get out of bed immediately on waking.</td></tr>
+    <tr><td>TikTok / video consumption</td><td>Borrowed scripts replace real thinking</td><td>30-min daily limit. App timer or deletion.</td></tr>
+    <tr><td>Girl obsession during study</td><td>Escape from study stress via emotional fantasy</td><td>Write name + "escape" on paper. Return to book.</td></tr>
+    <tr><td>Gambling (40k lost)</td><td>Same dopamine loop as all other escapes</td><td>Delete betting app today. No "limit" — full removal.</td></tr>
+    <tr><td>Helping others during study hours</td><td>Validation addiction — need to feel useful</td><td>"I can't right now, I'm studying." No explanation.</td></tr>
+    <tr><td>Lying about study progress</td><td>Avoidance of real accountability</td><td>Weekly honest report to one trusted person.</td></tr>
+    <tr><td>No mock tests</td><td>Fear of seeing real score (from perfectionist mother conditioning)</td><td>Mock test every Sunday. Score doesn't matter — doing it does.</td></tr>
+    <tr><td>Rage at mother near exams</td><td>Old trauma triggered by pressure + her voice</td><td>Study with earphones. Name the trigger: "This is old pain."</td></tr>
+    <tr><td>Becoming your mother's patterns</td><td>Unprocessed generational trauma</td><td>Notice → name → choose differently. Therapy strongly recommended.</td></tr>
+    <tr><td>Daydream / fantasy loops</td><td>Content consumption + suppressed need for achievement</td><td>Real small wins daily. Less content = less fantasy fuel.</td></tr>
+    <tr><td>Suicidal thoughts during crisis</td><td>Cumulative stress with no release valve</td><td>Call someone immediately. Nepal NIMH: 9840021600.</td></tr>
+    <tr><td>Late sleep → bad mornings</td><td>Night rewards disrupt sleep discipline</td><td>Phone down 10pm. Sleep 10:30. No exceptions on study days.</td></tr>
+    <tr><td>Study only ~4h/day (real)</td><td>Unrealistic plans + multiple escape routes</td><td>Target 5h, track honestly, build to 6h over 4 weeks.</td></tr>
+  </table>
+</div>
+
+<!-- FINAL NON-NEGOTIABLES -->
+<div class="section warning">
+  <h2>⚡ The 5 Non-Negotiables — Start Today</h2>
+  <p>Everything else can be gradual. These five cannot wait:</p>
+  <ol>
+    <li><strong>Delete the betting app.</strong> Not tomorrow. Right now, after reading this.</li>
+    <li><strong>No fap before noon.</strong> This recovers your morning energy immediately.</li>
+    <li><strong>Phone down at 10pm, sleep by 10:30.</strong> This fixes self-control the next day.</li>
+    <li><strong>Give a mock test this Sunday.</strong> Whatever score comes — that is your real starting point.</li>
+    <li><strong>6-minute morning self-monologue before touching your phone.</strong> You proved this works. Do it daily.</li>
+  </ol>
+  <p style="margin-top:12px; color:#f39c12;">You don't need to fix everything at once. Fix these five first. Everything else becomes easier once these are in place.</p>
+</div>
+
+<div class="section final" style="margin-top:24px;">
+  <h2>✅ Final Honest Assessment</h2>
+  <p>You are more self-aware than most people twice your age. You have correctly diagnosed your trauma, your patterns, your escapes, your triggers — in writing, repeatedly, over four years. That capacity is rare and genuinely valuable.</p>
+  <p style="margin-top:8px;">But awareness without action is just a comfortable lie you tell yourself. The journal has become part of the escape — a way to feel like you're working on yourself without having to sit with a biology chapter.</p>
+  <p style="margin-top:8px;"><strong>The next journal entry that matters is not more insight. It's this: "Today I studied X hours. I gave a mock test. Here is my score."</strong></p>
+  <p style="margin-top:8px; color:#aaa; font-size:0.88rem;">All analysis based strictly on content across all 4 PDFs. No outside assumptions added.</p>
+</div>
+  </div>
+
+  <!-- ALL PARTS (shown together) -->
+  <div class="part-section" id="section-all">
+    <span class="part-label">Part 1 — Core Patterns</span>
+<h1>📓 Journal Analysis — Part 1 <span style="color:#888;font-size:0.85rem;font-weight:normal;">Your Patterns, Problems & Solutions</span></h1>
+
+<!-- CORE PATTERN -->
+<div class="section">
+  <h2>🔴 Core Pattern Running Your Life</h2>
+  <p><strong>Your brain is wired to repeat familiar pain and avoid unfamiliar success.</strong> You grew up with beating, neglect, being ignored — so your nervous system treats that as "normal." When success, love, or praise approaches, your brain panics because it doesn't know how that feels. You then self-sabotage to return to the familiar uncomfortable comfort zone.</p>
+  <p style="color:#f39c12;"><strong>Bottom line:</strong> You're not lazy. You're afraid. But fear is not an excuse — it's a problem to solve.</p>
+</div>
+
+<hr>
+
+<!-- PROBLEMS -->
+<h2 style="margin-bottom:12px;">🔴 Problems & Corresponding Solutions</h2>
+
+<!-- 1 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #1</span>
+  <h2>Coping Mechanism — You Escape Instead of Face</h2>
+  <ul>
+    <li>When stressed → TikTok, porn, roaming, daydreaming</li>
+    <li>When exam near → watch Dexter, short videos, sleep early</li>
+    <li>When alone → masturbate, then feel tired all day</li>
+    <li>When bored → fix others' devices, help neighbours, do anything except study</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>Name the escape: when you pick up the phone to avoid study, say out loud — <em>"I am escaping right now."</em> Don't lie to yourself.</li>
+      <li>Replace, don't fight: instead of trying to "not watch TikTok," replace that slot with a 25-min Pomodoro. Make study the easier option by closing apps.</li>
+      <li>Stop fapping in the morning — you already know it drains your entire day's energy. This is not optional.</li>
+      <li>When anxiety hits → take a 10-min walk outside, then come back and open the book. Not TikTok. Walk → Book.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 2 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #2</span>
+  <h2>Planning Without Doing — Dopamine from Plans, Not Work</h2>
+  <ul>
+    <li>You made a plan to finish 138 chapters. Read less than 20.</li>
+    <li>You keep changing study plans every 2-3 days.</li>
+    <li>Making a new plan feels like progress — it's not. It's procrastination with extra steps.</li>
+    <li>You assumed you'd study 11+ hours/day. You couldn't do even 4.</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li><strong>One fixed plan. No changes for 2 weeks minimum.</strong> Changing plans is an addiction you wrote about yourself.</li>
+      <li>Track what you actually did — not what you planned. Every night write: "I studied X hours today. Yes/No."</li>
+      <li>Start with 2 hours of study per day only. Don't plan 11 hours. You can't go from 0 to 11. Build the habit first.</li>
+      <li>Ask yourself before making any new plan: <em>"Have I followed my last plan fully? If not, why am I making a new one?"</em></li>
+    </ul>
+  </div>
+</div>
+
+<!-- 3 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #3</span>
+  <h2>Assumption vs Reality — You Lie to Yourself to Escape Stress</h2>
+  <ul>
+    <li>You assumed you'd finish the syllabus — you didn't even start properly.</li>
+    <li>You told parents you gave online tests — you gave zero tests in the whole year.</li>
+    <li>You assumed you wouldn't repeat CEE mistakes — you repeated all of them.</li>
+    <li>You assumed studying 11h/day is realistic — it never was.</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li><strong>Before making any assumption, ask: "Have I ever done this successfully before? If not, why do I think I can now without changing anything?"</strong></li>
+      <li>Weekly self-check every Sunday: What did I plan? What did I actually do? What was the gap? Why?</li>
+      <li>Stop lying to parents. It keeps you in a fake comfort zone. Let the real pressure exist — it might help.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 4 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #4</span>
+  <h2>Overthinking & Fantasizing — Your Brain Entertains You Instead of Working</h2>
+  <ul>
+    <li>You think about winning Nobel Prize, saving people, fighting, becoming famous — daily.</li>
+    <li>You daydream about being a doctor, being appreciated, being a hero.</li>
+    <li>You think about girls for months (4 months on Ashika) until you realize it's not love — it's a need.</li>
+    <li>Overthinking makes you physically tired. You confused this with walking fatigue.</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>Your brain fantasizes because it's not getting real achievements. <strong>The only cure is real small wins.</strong> Study 1 chapter today. That stops fantasy better than willpower.</li>
+      <li>When fantasy starts, don't fight it — write it down in 1 sentence, close the notebook, open the book.</li>
+      <li>Reduce fantasy fuel: stop sad music, motivational reels, superhero content. Your journal says it directly — what you consume, your mind becomes.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 5 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #5</span>
+  <h2>Prioritizing Others' Tasks Over Your Own</h2>
+  <ul>
+    <li>Spent hours fixing neighbour's device — no benefit to you.</li>
+    <li>Searched exam center for cousin, guest house for neighbour.</li>
+    <li>Bypassed FRP till 2am when you had an exam coming.</li>
+    <li>Focused on classmate's work instead of study.</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>You help others to feel useful because you don't feel useful in your own life. Solve your own life first.</li>
+      <li>Hard rule: During study hours, say NO to all device repairs, errands, favors. After your goal is achieved — help freely.</li>
+      <li>Ask yourself: <em>"Will this task matter in 5 years? Will ignoring my study today matter in 5 years?"</em> Choose accordingly.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 6 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #6</span>
+  <h2>Trauma Controlling Your Actions</h2>
+  <ul>
+    <li>You were beaten severely as a child — with kitchen tools, slaps causing nosebleeds, feet to the face.</li>
+    <li>You felt neglected vs your younger brother who was treated with love.</li>
+    <li>You get violently angry thoughts about your mother near exam time — because she represents the pain/pressure loop.</li>
+    <li>You attract similar painful situations repeatedly because pain feels "familiar."</li>
+    <li>You suppress these feelings → they come out as rage, fantasy violence, self-sabotage.</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>You've already identified this brilliantly in your journal. Now act on it: <strong>Write specifically — "This anger toward mother is old pain, not present reality."</strong> Every time anger comes, write that sentence.</li>
+      <li>Create a clear separation: past you was beaten and helpless. Present you has choice and agency. They are different people.</li>
+      <li>Consider talking to a counselor or therapist — not because you're broken, but because carrying this alone is costing you years of your life. It's already cost you two CEE attempts.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 7 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #7</span>
+  <h2>Relationships & Girls — Used as Escape from Study</h2>
+  <ul>
+    <li>You admit: "I fall in love with girls as an excuse to avoid study pain."</li>
+    <li>You thought about Ashika for 4 months — it wasn't love, it was a need for peace/silence.</li>
+    <li>Late night chatting with her cost you study time during CEE prep.</li>
+    <li>You waste months on a girl who gives uncertainty, then feel suicidal when it hurts.</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>You already know: <em>"This kind of love is just an excuse to avoid pain (study)."</em> Believe your own journal.</li>
+      <li>Hard boundary: No late-night chatting. No entertaining new feelings during exam prep. This is not cruelty to yourself — it's respect.</li>
+      <li>When a girl enters your mind strongly, ask: <em>"What do I actually need right now that I'm not getting?"</em> — it's almost never the girl.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 8 -->
+<div class="section problem">
+  <span class="tag">PROBLEM #8</span>
+  <h2>No Urgency for Exams — You Don't Feel It's Real Until It's Too Late</h2>
+  <ul>
+    <li>"I had zero interest and never felt urgency for the upcoming exam."</li>
+    <li>You wasted the entire year on sports watching, betting, daydreaming.</li>
+    <li>Even with 13 days left before CEE, you were still roaming at 14:39.</li>
+    <li>You avoided mock tests because you hadn't studied — which made studying even less likely.</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li><strong>Manufacture urgency artificially.</strong> Set a mock test every Sunday — no exceptions. Even if you've studied zero. Face the score. That discomfort is the only thing that will create urgency.</li>
+      <li>Write on a paper and stick it where you sleep: <em>"I wasted 2 full years. The third chance is not guaranteed."</em></li>
+      <li>Skipping mock tests because you haven't studied is like refusing to check your weight because you haven't dieted. It doesn't help — it makes it worse.</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<!-- SELF-HARM WARNING -->
+<div class="section warning">
+  <h2>⚠️ Suicidal Thoughts — This Needs Separate Attention</h2>
+  <p>Your journal mentions suicidal thoughts multiple times — near exam failure, during relationship pain, when feeling worthless. This is serious and not something a study plan fixes.</p>
+  <p><strong>When these thoughts come:</strong></p>
+  <ul>
+    <li>Do not be alone. Call someone — even a voice call to anyone.</li>
+    <li>Write what you're feeling immediately instead of acting on any impulse.</li>
+    <li>Nepal has iCall counseling available: <strong>9840021600</strong> (NIMH Nepal helpline).</li>
+    <li>This is not weakness. You've been carrying a heavy childhood alone for years.</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- SUMMARY TABLE -->
+<div class="section">
+  <h2>📋 Quick Daily Review Checklist</h2>
+  <p style="margin-bottom:12px;">Ask yourself these every morning:</p>
+  <ul>
+    <li>☐ Did I study yesterday? How many actual hours?</li>
+    <li>☐ What escape did I use? (TikTok / porn / roaming / helping others)</li>
+    <li>☐ Did I follow my plan or make a new one?</li>
+    <li>☐ Am I chasing a girl or fantasy right now to avoid study?</li>
+    <li>☐ Is my anger/stress old trauma or present reality?</li>
+    <li>☐ Did I give any mock test this week?</li>
+  </ul>
+</div>
+
+<p style="color:#555;font-size:0.8rem;margin-top:24px;">Analysis based strictly on PDF Part 1 content — no outside assumptions added.</p>
+    <hr class="part-divider">
+    <span class="part-label">Part 2 — Dreams &amp; Behavioural Patterns</span>
+<h1>📓 Journal Analysis — Part 2 <span style="color:#888;font-size:0.85rem;font-weight:normal;">Dreams, Patterns & Behavioural Insights</span></h1>
+
+<!-- WHAT THIS PART CONTAINS -->
+<div class="section insight">
+  <h2>🟣 What Part 2 Actually Contains</h2>
+  <p>Part 2 is almost entirely a <strong>dream log</strong> spanning 2078–2082 (roughly 2021–2026), with a small number of waking observations mixed in. The dreams are raw and unfiltered. Rather than analyzing each dream individually, what matters is the <strong>repeating patterns across hundreds of dreams</strong> — because those patterns directly mirror your waking problems from Part 1.</p>
+</div>
+
+<hr>
+
+<h2 style="margin-bottom:12px;">🔴 Key Patterns Found Across Your Dreams</h2>
+
+<!-- PATTERN 1 -->
+<div class="section problem">
+  <span class="tag">DREAM PATTERN #1</span>
+  <h2>Exam Anxiety Dreams — Appearing Constantly</h2>
+  <ul>
+    <li>Not finishing exams in time, forgetting admit cards, copying answers, unprepared</li>
+    <li>Dreams of getting 97 in CEE and waking up relieved it wasn't real</li>
+    <li>Studying subjects in dreams (mole concept, kinematics, biology) — your brain is processing guilt about not studying while awake</li>
+    <li>Bunking class in dreams mirrors real-life avoidance</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Tells You</h3>
+    <p>Your subconscious is working overtime on exam anxiety that your waking self is suppressing through TikTok and roaming. The stress doesn't disappear — it just moves into your sleep. The only thing that will stop these dreams is actual study progress. Nothing else.</p>
+  </div>
+</div>
+
+<!-- PATTERN 2 -->
+<div class="section problem">
+  <span class="tag">DREAM PATTERN #2</span>
+  <h2>Violence, Being Beaten, Powerlessness</h2>
+  <ul>
+    <li>Being tied up with metal, people trying to kill you, being chased</li>
+    <li>Beaten by teachers, classmates inserting syringes in your back without consent</li>
+    <li>Fighting back violently in dreams — beating a classmate until she dies, fighting supernatural enemies</li>
+    <li>Getting slapped, bullied, overlooked in crowds</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Tells You</h3>
+    <p>These are direct replays of your childhood trauma — being beaten by your mother and father without being able to fight back. In dreams, you <em>can</em> fight back. That's the release valve. But it's not healing — it's just pressure relief. The anger is still in you, unprocessed, and it leaks into how you treat yourself (self-sabotage, self-harm thoughts) and others (rage at mother near exams). This needs real processing — writing it out like you've been doing is good, but it's not enough on its own.</p>
+  </div>
+</div>
+
+<!-- PATTERN 3 -->
+<div class="section problem">
+  <span class="tag">DREAM PATTERN #3</span>
+  <h2>Girls & Relationships — Appearing in Almost Every Dream</h2>
+  <ul>
+    <li>Ashika, Gitika, Jipsum, Shruti, Drisya, Prayusha appear across years of dreams</li>
+    <li>In dreams you speak freely, hold hands, kiss, connect — things you freeze up on in real life</li>
+    <li>You dream of girls saying "I like you" or initiating — the opposite of what happens in waking life</li>
+    <li>Sexual dreams appear frequently — this is tied to suppressed urges and your porn/fap habit</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Tells You</h3>
+    <p>You already correctly identified this in Part 1: these feelings are projections of what you're missing — connection, being heard, being chosen. The dreams are compensation. The more you suppress in waking life (by not talking, not expressing), the more it floods your sleep. This won't stop until you build real social connection — not fantasy. And the porn/fap habit is feeding this loop directly. It creates artificial intimacy that makes real connection feel harder.</p>
+  </div>
+</div>
+
+<!-- PATTERN 4 -->
+<div class="section problem">
+  <span class="tag">DREAM PATTERN #4</span>
+  <h2>Being Ignored / Invisible in Groups</h2>
+  <ul>
+    <li>Classmates don't notice you, teachers don't acknowledge you</li>
+    <li>Friends greet others loudly but ignore you — exact mirror of the real SEE graduation day event from Part 1</li>
+    <li>You try to impress Ashika but she stays still with no reaction</li>
+    <li>Sitting in groups but remaining silent, not contributing</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Tells You</h3>
+    <p>Your need to be seen and acknowledged is your biggest emotional driver — and it's been unmet since childhood. Your fantasy of winning Nobel Prizes, saving people, being a doctor everyone admires — it all traces back to this single wound: <em>I want to be noticed and valued.</em> The good news: this is actually a powerful motivator IF you point it at real work. Use the hunger for recognition to fuel study, not fantasy.</p>
+  </div>
+</div>
+
+<!-- PATTERN 5 -->
+<div class="section problem">
+  <span class="tag">DREAM PATTERN #5</span>
+  <h2>Heroism & Saving Others — Recurring Fantasy</h2>
+  <ul>
+    <li>Saving people from zombies, fighting superbeings, being a doctor saving lives</li>
+    <li>Protecting friends from dogs, shielding others from danger</li>
+    <li>Forgiving enemies (letting "mice" go free after defeating them)</li>
+    <li>Being the one who steps up when no one else does</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Tells You</h3>
+    <p>You have a genuine drive to be useful and impactful. That's not delusion — it's a real value. But right now it only exists in dreams and fantasy because you haven't built the foundation (skills, degree, discipline) to express it in reality. The hero in your dreams is who you want to be. The person roaming at 14:39 before an exam is who you currently are. Close that gap — one study session at a time.</p>
+  </div>
+</div>
+
+<!-- PATTERN 6 -->
+<div class="section problem">
+  <span class="tag">DREAM PATTERN #6</span>
+  <h2>Being Caught / Exposed / In Trouble for Breaking Rules</h2>
+  <ul>
+    <li>Hiding mobile from principal, running from police, caught bunking</li>
+    <li>Making mistakes in exams and being blamed unfairly</li>
+    <li>Being punished for things that weren't your fault</li>
+    <li>Anxiety about being discovered doing something wrong</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Tells You</h3>
+    <p>This comes directly from childhood — you were punished for mistakes (and non-mistakes) harshly, unpredictably. Now your nervous system is hypervigilant. In waking life this shows up as: avoiding mock tests (fear of seeing the real score), lying to parents about studying, not confronting situations directly. You avoid accountability because accountability was never safe in your childhood. Now it needs to be — on your own terms.</p>
+  </div>
+</div>
+
+<hr>
+
+<!-- WAKING INSIGHTS FROM PART 2 -->
+<h2 style="margin-bottom:12px;">💡 Waking Observations from Part 2 (Non-Dream)</h2>
+
+<div class="section">
+  <span class="tag">INSIGHT #1</span>
+  <h2>Planning Addiction — Confirmed Again</h2>
+  <p>You wrote it clearly: <em>"My plans and Nepal's politics are same — both keep changing."</em> And: <em>"The time I spend making plans should be used in studying."</em></p>
+  <div class="callout">You already know the solution. You wrote it yourself: make one plan, follow it for one month, analyze at the end. <strong>Why haven't you done this?</strong> Because starting the plan means facing the discomfort of actual work. Planning is comfortable. Doing is not.</div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #2</span>
+  <h2>Distraction = Suppression Signal</h2>
+  <p>You identified this correctly: <em>"When you can't focus, there's a high chance you're suppressing something."</em> Examples you listed: controlling urges to watch adult content, avoiding phone, internal health issues.</p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ Action</h3>
+    <p>When you can't focus, don't fight the distraction directly. Ask: <em>"What am I avoiding right now? What feeling am I running from?"</em> Write the answer down. That 2-minute journal entry often breaks the avoidance loop better than willpower.</p>
+  </div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #3</span>
+  <h2>Sleep Controls Self-Control</h2>
+  <p>You wrote: <em>"Sleep is important because it gives you control over yourself. When you lack sleep you lose control and repeat regular (bad) activity."</em></p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ Action</h3>
+    <p>This is neuroscience fact — your prefrontal cortex (decision-making, self-control) is the first thing impaired by poor sleep. Your pattern of sleeping late due to games/chatting, then waking up late and fapping, then having no energy — this chain starts with sleep. Fix sleep first. Hard cutoff: phone down at 10pm, sleep by 10:30.</p>
+  </div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #4</span>
+  <h2>Content Consumption Drains Energy</h2>
+  <p>You wrote: <em>"The more you consume content from the internet, the more energy you invest in it — by evening you're exhausted."</em> And: <em>"Consume less content to save energy for study."</em></p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ Action</h3>
+    <p>You have a working hypothesis here. Test it: for 3 days, limit internet content to 30 minutes total per day. Track your energy and study hours. You'll see the difference. Your brain is burning mental fuel on TikTok that should go to chapters.</p>
+  </div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #5</span>
+  <h2>Mother's Voice as a Study Blocker</h2>
+  <p>You wrote: <em>"Why I can't study since class 7-12 — because of her. She shouts all the time, I can't endure it, I leave the house and roam. All the time goes there and I feel tired."</em></p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ Action</h3>
+    <p>This is real and valid. Her voice triggers your nervous system into fight-or-flight — a trauma response, not weakness. Practical solutions: study with noise-cancelling earphones or lo-fi music, find a quiet library or café, study early morning before the house gets loud. Don't wait for the environment to be perfect — control what you can.</p>
+  </div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #6</span>
+  <h2>Your Ideal Day Plan (Already Written by You)</h2>
+  <p>You wrote a solid ideal day schedule in this file: 5am wake, meditation, shadow work, study blocks with 15-30 min breaks, meals structured in. It's reasonable on paper.</p>
+  <div class="callout" style="border-color:#e74c3c;">
+    <strong>Hard truth:</strong> This is your 10th+ study plan. The plan isn't the problem. Execution is. Stop tweaking the plan. Follow the one you have. Even if you only hit 40% of it, that's better than 0% of a perfect plan.
+  </div>
+</div>
+
+<hr>
+
+<!-- CAUSES OF NOT STUDYING -->
+<div class="section">
+  <h2>📋 Your Own List: Causes of Not Studying (From Part 2)</h2>
+  <p>You identified these yourself — they're accurate:</p>
+  <ul>
+    <li>Daydreams and overthinking while walking</li>
+    <li>Worrying about the future</li>
+    <li>Stress and unprocessed anger</li>
+    <li>Not doing morning routine (biology not supporting you)</li>
+    <li>Not drinking enough water</li>
+    <li>Late night chatting and sleep deprivation</li>
+    <li>Content overconsumption draining mental energy</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Priority Fix Order</h3>
+    <ol style="padding-left:18px;">
+      <li style="margin-bottom:6px;"><strong>Sleep by 10:30pm</strong> — fixes morning routine, energy, self-control</li>
+      <li style="margin-bottom:6px;"><strong>No fap in morning</strong> — directly recovers daily energy</li>
+      <li style="margin-bottom:6px;"><strong>Reduce content to 30min/day</strong> — stops mental exhaustion</li>
+      <li style="margin-bottom:6px;"><strong>Walk only with purpose, not to think</strong> — stops overthinking loop</li>
+      <li style="margin-bottom:6px;"><strong>Drink water regularly</strong> — even this small thing you noted yourself</li>
+    </ol>
+  </div>
+</div>
+
+<hr>
+
+<!-- WHAT PART 2 ADDS TO PART 1 -->
+<div class="section insight">
+  <h2>🟣 What Part 2 Adds Beyond Part 1</h2>
+  <ul>
+    <li><strong>Your dreams confirm what you already wrote in waking entries</strong> — the patterns are consistent, not random. Your subconscious and conscious mind agree on the problems.</li>
+    <li><strong>The trauma is older and deeper than you may realize</strong> — these dream patterns go back to 2078 (2021). This isn't a recent issue caused by exam pressure. It's a long-standing wound.</li>
+    <li><strong>You have the capacity for insight</strong> — the dream interpretations you wrote yourself (anima projection, exam anxiety, suppression) are accurate. The problem is never understanding; it's always the gap between understanding and action.</li>
+  </ul>
+</div>
+
+<p style="color:#555;font-size:0.8rem;margin-top:24px;">Analysis based strictly on PDF Part 2 content — no outside assumptions added. Ready for Part 3.</p>
+    <hr class="part-divider">
+    <span class="part-label">Part 3 — Real-Life Events &amp; Deeper Patterns</span>
+<h1>📓 Journal Analysis — Part 3 <span style="color:#888;font-size:0.85rem;font-weight:normal;">New Problems, Real-Life Events & Deeper Patterns</span></h1>
+
+<!-- WHAT'S NEW IN PART 3 -->
+<div class="section new">
+  <h2>🟢 What Part 3 Adds That Parts 1 & 2 Didn't</h2>
+  <p>Part 3 contains more dreams but also crucial <strong>real-life events and waking observations</strong> not seen before: a physical assault by a drunk man, gambling losses of 40,000 rupees, actual time logs of your day, a girl you're currently emotionally caught up in, exam mistakes during actual tests, and some of your most honest self-observations yet. These need direct attention.</p>
+</div>
+
+<hr>
+<h2 style="margin-bottom:12px;">🔴 New Problems Found in Part 3</h2>
+
+<!-- PROBLEM: GAMBLING -->
+<div class="section problem">
+  <span class="tag">PROBLEM #1 — NEW</span>
+  <h2>Gambling — You've Lost 40,000 Rupees</h2>
+  <p>You wrote it directly: <em>"Till now I have lost 40k."</em> You also identified the mechanism yourself: winning creates overconfidence, overconfidence makes you ignore facts, you lose more. You keep chasing losses by betting bigger.</p>
+  <div class="red-callout">
+    This is not a minor hobby. 40,000 rupees is real money — money that could have paid for coaching, books, or months of study support. And you're a student who needed a scholarship for CEE. This is directly competing with your future.
+  </div>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li><strong>Delete the betting app. Now. Not tomorrow.</strong> You already know "putting a limit" doesn't work — you said so yourself. Limits don't work for addictive behavior. Removal does.</li>
+      <li>The dopamine from betting is the same loop as planning and TikTok — a shortcut to feeling something without doing real work. It's the same enemy.</li>
+      <li>Every rupee you gamble is a vote against your own future. You wrote you want to be a software engineer at Google. That person doesn't have a betting app on his phone.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PROBLEM: PHYSICAL ASSAULT -->
+<div class="section problem">
+  <span class="tag">PROBLEM #2 — NEW</span>
+  <h2>Physical Assault — And What It Revealed About You</h2>
+  <p>On 2082/05/21, a drunk man beat you badly — face, eye, head. You lost consciousness. No one around helped. You came home and fantasized violently about revenge for a long time.</p>
+  <p>Then you did something important: you used Gemini to understand why you couldn't lift your hand to defend yourself. The answer you found — <strong>learned helplessness from parental beatings</strong> — is exactly correct.</p>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Means</h3>
+    <ul>
+      <li>Your body literally froze because your nervous system learned in childhood: <em>"When someone bigger hurts me, I cannot fight back — fighting back makes it worse."</em> That's not cowardice. That's a trauma response wired in from years of being beaten by your parents.</li>
+      <li>The violent revenge fantasies afterward are your nervous system's way of processing the helplessness — same pattern as the fight-back dreams.</li>
+      <li>This is one more piece of evidence that the childhood trauma is not just emotional — it's physically stored in how your body responds to threat. This really does need professional help to process, not just journaling.</li>
+      <li>Practically: learn basic self-defense not for revenge, but to rebuild a sense of bodily safety and agency. That matters for confidence in all areas of life.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PROBLEM: CURRENT GIRL -->
+<div class="section problem">
+  <span class="tag">PROBLEM #3 — NEW</span>
+  <h2>Current Girl (SK) — You're In It Again, Right Now</h2>
+  <p>You wrote in June 2025: <em>"I feel really bad, stressed, thinking about her and study. I don't know what I'll do in future."</em> She approached you, you roamed till 12am, watched movies till 3am. You already know she has a boyfriend. Your gut told you to leave — you didn't.</p>
+  <div class="red-callout">
+    You've written this exact script before. Different name, same story. Girl appears → you get emotionally hooked → late nights → study collapses → you feel suicidal or hopeless → eventually you move on → you write that it was an excuse to avoid study. You already know how this ends.
+  </div>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>Your gut said: <em>"Never talk to her. Don't even look at her."</em> Your gut was right. Listen to it this time.</li>
+      <li>She has a boyfriend. Continuing this is not romantic — it's self-punishment disguised as hope.</li>
+      <li>Hard rule: no contact. No checking her social media. Not even passive watching. Complete cut-off — you already know why from Part 1.</li>
+      <li>Every hour you spend thinking about her is an hour stolen from CEE prep. You don't have extra hours.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PROBLEM: LYING -->
+<div class="section problem">
+  <span class="tag">PROBLEM #4 — NEW</span>
+  <h2>Lying — To Others and to Yourself</h2>
+  <p>You wrote: <em>"I noticed when I lie, from inside I always wish I had told the truth. This lie affects me a lot."</em> You identified why you lie: to cover yourself, to appear responsible and stable.</p>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>Lying to parents about studying costs you the one thing that could create urgency — real accountability. When you lie and say you're studying, the pressure disappears and so does the motivation.</li>
+      <li>Try one week of telling the truth to at least one person about your actual study hours. See what happens. The discomfort is productive.</li>
+      <li>You already know this: <em>"Instead of lying, just tell the truth."</em> Your own words. Follow them.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PROBLEM: EXAM MISTAKES DURING ACTUAL TESTS -->
+<div class="section problem">
+  <span class="tag">PROBLEM #5 — NEW</span>
+  <h2>Specific Exam Mistakes You Identified Yourself</h2>
+  <p>This is valuable — you listed your actual in-exam failures:</p>
+  <ul>
+    <li>Explaining to friends before exam drains you and makes you sad going in</li>
+    <li>Worrying about the exam instead of last-minute revision</li>
+    <li>Doing MCQs first → loses confidence → rest of exam suffers</li>
+    <li>Waking up late → body pain → can't focus</li>
+    <li>No drawing practice → lose marks on diagram questions</li>
+    <li>Only reading, no writing practice → can't write properly in exam</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution — Exam Day Protocol</h3>
+    <ol>
+      <li><strong>No explaining concepts to friends the day before or morning of exam.</strong> Say "I need to focus" and walk away.</li>
+      <li><strong>Morning of exam:</strong> wake early, light revision only, no new topics.</li>
+      <li><strong>In exam:</strong> start with questions you know, not MCQs first. Build confidence early.</li>
+      <li><strong>From now:</strong> practice writing answers and drawing diagrams weekly — not just reading. CEE tests your hand, not just your brain.</li>
+      <li><strong>Sleep the night before:</strong> non-negotiable. Body pain from late sleep directly tanks your performance.</li>
+    </ol>
+  </div>
+</div>
+
+<hr>
+
+<!-- YOUR ACTUAL TIME LOG ANALYSIS -->
+<div class="section warning">
+  <h2>⚠️ Your Real Day — Time Log Audit (2081/05/31)</h2>
+  <p>You logged one full day honestly. Here's what it actually shows:</p>
+  <div class="time-log">
+5:00–6:00 → Waking + self-talk + mobile (1hr, 15min productive)
+6:00–8:00 → Roaming + breakfast + mobile (2hrs, 0% study)
+8:00–9:35 → Python learning (1hr 35min ✓)
+9:35–10:35 → Mobile + walking (1hr, 0% study)
+10:35–12:45 → Futurama + homework (2hrs 10min, mixed)
+12:45–14:06 → Meal + Futurama (1hr 20min, 0% study)
+14:06–14:34 → Mobile + fap (28min, negative impact)
+14:34–16:00 → Kaj bottom (1hr 26min ✓)
+  </div>
+  <p><strong>Honest count:</strong> ~3 hours of actual productive work out of 11 hours of waking time. The rest was roaming, Futurama, mobile, and fap.</p>
+  <p style="color:#f39c12; margin-top:8px;"><strong>This is the gap between your ideal day plan (10+ study hours) and your actual day (3 hours).</strong> You're not failing because of bad luck or circumstances. You're failing because of how you spend time hour by hour. This is fixable — but only if you're honest about it.</p>
+</div>
+
+<hr>
+
+<!-- KEY NEW INSIGHTS FROM PART 3 -->
+<h2 style="margin-bottom:12px;">💡 Important Waking Insights From Part 3</h2>
+
+<div class="section">
+  <span class="tag">INSIGHT #1</span>
+  <h2>Daydream Origin — You Nailed It</h2>
+  <p>You wrote: <em>"Most of my thoughts are replays of videos I've watched. I automatically put myself in the main character's shoes. This is pleasurable but fantasy. In reality I don't do even 1% of the work to achieve those things."</em></p>
+  <p>And your own solution: <em>"Next time a scene appears — remind myself: 'This is not my thought; it's a borrowed script from a video.'"</em></p>
+  <div class="callout">This is one of the most accurate self-observations in all three PDFs. The fix is simple and you already wrote it: <strong>catch the borrowed script, name it, return to reality.</strong> The problem is you wrote this insight and then kept watching the same content that generates the scripts. Less content = less fantasy = more real action.</div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #2</span>
+  <h2>Procrastination Root Cause — Also Correct</h2>
+  <p>You wrote: <em>"Brain gets tired just by thinking about the task. You should just start doing the task."</em></p>
+  <p>This is called "task aversion" — the anticipation of a hard task activates the same brain region as physical pain. The relief comes from starting, not from planning or delaying.</p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ Action</h3>
+    <p>Two-minute rule: commit to just opening the book and reading one paragraph. That's it. Once started, the pain signal drops and you continue. The hardest moment is always the 10 seconds before you begin.</p>
+  </div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #3</span>
+  <h2>Reward Timing — You Got This Right</h2>
+  <p>You wrote: <em>"Reward shouldn't be given at night but at morning or afternoon — because at night I lust for reward and leave my duty."</em></p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ Action</h3>
+    <p>Structure rewards in the middle of the day — after a solid morning study block. Never as a nighttime activity. Night rewards (games, videos, late chats) consistently destroy the next morning's routine. You've proven this to yourself multiple times.</p>
+  </div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #4</span>
+  <h2>Mother's Core Defect — You Identified It Precisely</h2>
+  <p>You wrote: <em>"She wants everything perfect. Can't commit a tiny mistake. No matter how much work you've done, she won't notice — but the mistake will be noticed."</em></p>
+  <div class="callout">
+    This is called <strong>conditional approval</strong> — love and attention only when you perform perfectly. Growing up under this trains you to: avoid being evaluated (skip mock tests), hide failures (lie about studying), and feel worthless when you make mistakes. You're still living under this psychological rule even when she's not in the room. <strong>The internal critic you carry is her voice.</strong> Recognizing that is step one to separating it from your own voice.
+  </div>
+</div>
+
+<div class="section">
+  <span class="tag">INSIGHT #5</span>
+  <h2>Study Before Bed — You Found Something That Works</h2>
+  <p>You wrote: <em>"Studying before going to bed is beneficial — before sleeping, anything I read goes directly into the brain. I even get dreams related to study."</em></p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ Action</h3>
+    <p>This is neuroscience fact — sleep consolidates memory. The last thing you review before sleep gets processed during REM. Replace late-night phone/game/chat with 30–45 minutes of biology or chemistry reading. This alone could improve retention significantly without adding extra study hours.</p>
+  </div>
+</div>
+
+<hr>
+
+<!-- PATTERNS CONFIRMED ACROSS ALL 3 PARTS -->
+<div class="section insight">
+  <h2>🟣 Patterns Now Confirmed Across All 3 Parts</h2>
+  <p>After three PDFs, these are the non-negotiable truths about your situation:</p>
+  <ul>
+    <li><strong>Your core problem is not intelligence or ability.</strong> You dream about physics, chemistry, biology — your brain processes academic content even while sleeping. The knowledge goes in. Discipline to sit with it while awake is the missing piece.</li>
+    <li><strong>Every escape route is the same enemy:</strong> TikTok, porn, fap, roaming, betting, helping others, late-night chat, fantasy, planning — all dopamine shortcuts that replace the discomfort of real work.</li>
+    <li><strong>You have written your own solutions, correctly, dozens of times.</strong> The problem has never been lack of insight. It has always been the execution gap.</li>
+    <li><strong>The trauma is the root.</strong> Everything else — the avoidance, the fantasy, the learned helplessness, the need for approval, the rage at your mother — branches from the same root: you were hurt repeatedly as a child with no escape and no protection. That wiring runs deep and it runs your life more than you realize.</li>
+    <li><strong>Time is running out for CEE.</strong> You've said this yourself. Two attempts gone. A third is not guaranteed to be available or affordable forever.</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- MASTER DAILY CHECKLIST -->
+<div class="section solution">
+  <h2>✅ Master Daily Review — All 3 Parts Combined</h2>
+  <p>Stick this somewhere visible. Read every morning:</p>
+  <ol>
+    <li>Did I sleep before 10:30pm last night? Y/N</li>
+    <li>Did I fap this morning? If yes — why? What was I avoiding?</li>
+    <li>What is my actual study target today? (Hours, not subjects)</li>
+    <li>Am I following my existing plan or making a new one? (If new → stop.)</li>
+    <li>Is the betting app still on my phone? (If yes → delete it now.)</li>
+    <li>Am I thinking about SK or any girl right now? → Name what you actually need.</li>
+    <li>What content did I consume today? Under 30 minutes? Y/N</li>
+    <li>Did I study before bed last night? Y/N</li>
+    <li>Did I give a mock test this week? Y/N — if no, schedule one for Sunday.</li>
+    <li>Am I lying to anyone about my study progress? → Tell the truth today.</li>
+  </ol>
+</div>
+
+<p style="color:#555;font-size:0.8rem;margin-top:24px;">Analysis based strictly on PDF Part 3 content. Send Part 4 when ready.</p>
+    <hr class="part-divider">
+    <span class="part-label">Part 4 — Girl History, Root Causes &amp; Master Summary</span>
+<h1>📓 Journal Analysis — Part 4 + Master Summary <span style="color:#888;font-size:0.85rem;font-weight:normal;">Final Patterns & Complete Action Plan</span></h1>
+
+<!-- PART 4 OVERVIEW -->
+<div class="section insight">
+  <h2>🟣 What Part 4 Contains</h2>
+  <p>Part 4 has more time logs, your complete crush/girl history from class 3 onward, deeper self-reflection on porn and daydream roots, a mirror moment where you realize you've become your mother, and important observations about your own psychology that deserve direct confrontation.</p>
+</div>
+
+<hr>
+<h2 style="margin-bottom:12px;">🔴 New Problems & Insights From Part 4</h2>
+
+<!-- SECOND TIME LOG -->
+<div class="section warning">
+  <span class="tag">TIME LOG AUDIT #2 — 2081/06/05</span>
+  <h2>Another Full Day — Same Pattern</h2>
+  <div class="time-log">
+8:09–10:00  → FB account exploitation + mobile (1hr 51min, 0% study)
+10:00–10:45 → Water bottle + Python (45min ✓)
+10:45–11:00 → Mobile (15min wasted)
+11:00–11:40 → Roaming (40min)
+11:40–13:00 → Homework (1hr 20min ✓)
+13:00–14:40 → Meal + Futurama (1hr 40min, 0% study)
+14:40–16:00 → Kaj Bottom (1hr 20min ✓)
+16:00–18:00 → Roaming + doing nothing at factory (2hrs, 0%)
+18:00–19:00 → Movie + fap (1hr, negative)
+19:00–20:00 → Roaming again (1hr, 0%)
+20:00–21:15 → Homework (1hr 15min ✓)
+  </div>
+  <p><strong>Actual productive work: ~4.5 hours out of ~13 waking hours.</strong> The rest — roaming, Futurama, Facebook, fap, doing nothing at a factory — consumed more time than study. Two days logged across Parts 3 and 4, same result both times.</p>
+  <div class="red-callout" style="margin-top:10px;">This is your real baseline. Not the 10-hour plan. Not the ideal schedule. <strong>4 hours.</strong> Any goal you set needs to start from this honest number and build up — not from a fantasy of 11 hours that has never happened once.</div>
+</div>
+
+<!-- GIRL HISTORY -->
+<div class="section problem">
+  <span class="tag">PROBLEM #1 — CONFIRMED & EXPANDED</span>
+  <h2>13 Girls Since Class 3 — The Full Pattern</h2>
+  <p>You listed your complete crush history: Sonika (class 3–8), Bimala, Salina, Sharmila, Rita, Gitika, Jipsum, Vishaka, Kriti, Aakriti, Shruti, Pratiksha, Ashika. That's 13 names across roughly 10 years.</p>
+  <div class="callout">
+    Look at what you wrote about each one: <em>anima projection, avoiding study pain, projecting my weakness, she speaks less, she is similar to me, I feel something when I see her eyes.</em> You wrote the same diagnosis for almost every single one. <strong>This is not love recurring. It is the same escape mechanism recurring with a new face.</strong>
+  </div>
+  <p>The most honest thing you wrote: <em>"Avoiding the pain of study"</em> and <em>"projecting my weakness on her"</em> — for Ashika specifically. You know this. You've known it for years.</p>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What This Means Practically</h3>
+    <ul>
+      <li>The next girl who appears in your mind while you're supposed to be studying is not a person — she is a symptom. She is stress in disguise.</li>
+      <li>You don't need to avoid girls forever. You need to build the foundation (career, stability, self-respect) first. Then real connection becomes possible. Right now you're trying to get love before you've built the self that can sustain it.</li>
+      <li>When a girl enters your mind during study: write her name and "escape mechanism" on paper. That's it. Then return to the page.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PORN & DAYDREAM ROOTS -->
+<div class="section problem">
+  <span class="tag">PROBLEM #2 — ROOT CAUSES IDENTIFIED BY YOU</span>
+  <h2>Why You Watch Porn & Daydream — Your Own Analysis</h2>
+  <p>You wrote this clearly:</p>
+  <ul>
+    <li><strong>Porn:</strong> boredom, loneliness, curiosity, and most importantly — <em>stress (mainly from study)</em></li>
+    <li><strong>Daydream:</strong> escape reality, shadow projection, and again — <em>stress (mainly from study)</em></li>
+  </ul>
+  <div class="callout">
+    Both roads lead to the same place: <strong>study stress is the trigger.</strong> You don't have a porn problem or a daydream problem in isolation. You have a study-avoidance problem that expresses itself through porn and daydream. Fix the avoidance — through consistent small study sessions — and both symptoms reduce naturally. Willpower alone against porn or fantasy never works long-term. Removing the root cause (unmanaged study stress) does.
+  </div>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ The Chain to Break</h3>
+    <ol>
+      <li>Study feels hard/stressful → brain seeks escape</li>
+      <li>Escape = porn, TikTok, roaming, daydream, girl obsession</li>
+      <li>Escape gives dopamine → study feels even harder by comparison</li>
+      <li>More stress → more escape → less study → more stress</li>
+    </ol>
+    <p><strong>Break it at step 1:</strong> make study sessions shorter and less threatening. 25 minutes with a timer. Stop before the stress builds. That's it. You don't need discipline of steel — you need to never let the stress get big enough to trigger the escape.</p>
+  </div>
+</div>
+
+<!-- YOU ARE YOUR MOTHER -->
+<div class="section problem">
+  <span class="tag">PROBLEM #3 — THE HARDEST TRUTH IN ALL 4 PDFs</span>
+  <h2>You Are Becoming Your Mother</h2>
+  <p>You wrote this yourself, and it took courage: <em>"Even I don't accept it — I am her. I shout like her. I speak rough words like her. I also keep looking for mistakes in others' work. I even look for validation from everybody."</em></p>
+  <div class="red-callout">
+    This is one of the most important things in all four PDFs. The person you resent most — whose voice triggers you, whose behavior you hate — is the person you are slowly becoming. This is not an insult. It is how unprocessed trauma works: you either repeat what was done to you, or you consciously choose to become different. Right now you are repeating it, even while hating it.
+  </div>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ What To Do With This</h3>
+    <ul>
+      <li>The fact that you can see it means you can change it. Most people never get this far.</li>
+      <li>Every time you notice yourself shouting, looking for others' mistakes, or seeking validation — pause and say: <em>"This is her pattern, not mine. I choose differently."</em> You won't always succeed. But you'll succeed more often than if you never named it.</li>
+      <li>Stop hating her and start understanding her: she was probably also raised with harsh perfectionism and no emotional support. That doesn't excuse what happened to you — but it breaks the cycle of pure rage, which is currently costing you energy.</li>
+      <li>This specifically needs a therapist or counselor. Not because you're broken — but because breaking a generational pattern alone is extremely hard. You need someone to reflect it back to you in real time.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- VALIDATION SEEKING -->
+<div class="section problem">
+  <span class="tag">PROBLEM #4</span>
+  <h2>Validation Addiction — You Say Yes to Everything to Feel Useful</h2>
+  <p>You wrote: <em>"I easily say yes to anything because I want to feel like I also matter in this society, I am useful. I have to practice saying no."</em></p>
+  <ul>
+    <li>Repairing neighbours' devices for hours → need to feel needed</li>
+    <li>Helping classmates in exams when you haven't studied yourself → need to feel capable</li>
+    <li>Searching exam centers for cousins → need to feel useful</li>
+    <li>Saying yes to late-night roaming with the girl → need to feel chosen</li>
+  </ul>
+  <div class="section solution" style="margin-top:12px;">
+    <h3>✅ Solution</h3>
+    <ul>
+      <li>Every time you say yes to someone else's need during study hours, you are saying no to yourself. That trade is not worth it.</li>
+      <li>Practice this exact sentence: <em>"I can't right now, I'm studying."</em> Seven words. Say them once. Don't explain further — explanations invite negotiation.</li>
+      <li>Real usefulness comes from becoming capable, not from endlessly serving others while your own life stalls. The most useful version of you is the one who actually cracks CEE and builds skills.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- MONOLOGUE BENEFIT -->
+<div class="section insight">
+  <span class="tag">INSIGHT — WHAT ACTUALLY WORKS FOR YOU</span>
+  <h2>Self-Monologue Works — You Proved It</h2>
+  <p>You wrote: <em>"I talked with myself about shadow, mistakes, and desires for just 6 minutes — and I was in control and doing productive tasks like reading botany, which was hard yesterday."</em></p>
+  <div class="section solution" style="margin-top:10px;">
+    <h3>✅ This Is Your Most Effective Tool — Use It Daily</h3>
+    <ul>
+      <li>6 minutes of honest self-talk before study = better than 30 minutes of planning or motivation videos.</li>
+      <li>What to cover: what am I avoiding right now? What do I actually need? What's the smallest thing I can do in the next 25 minutes?</li>
+      <li>You already know this works. You wrote it. Now make it a non-negotiable morning habit — before you touch your phone.</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<!-- MASTER SUMMARY — ALL 4 PARTS -->
+<h2 style="margin-bottom: 16px; font-size: 1.2rem; color: #fff;">📊 MASTER SUMMARY — ALL 4 PDFs COMBINED</h2>
+
+<div class="stat-grid">
+  <div class="stat-box"><span class="number">13</span><span style="font-size:0.8rem;color:#aaa;">Girls used as escape since class 3</span></div>
+  <div class="stat-box"><span class="number">2</span><span style="font-size:0.8rem;color:#aaa;">CEE attempts wasted</span></div>
+  <div class="stat-box"><span class="number">40k</span><span style="font-size:0.8rem;color:#aaa;">Rupees lost to betting</span></div>
+  <div class="stat-box"><span class="number">~4h</span><span style="font-size:0.8rem;color:#aaa;">Actual study per day (real)</span></div>
+  <div class="stat-box"><span class="number">4+</span><span style="font-size:0.8rem;color:#aaa;">Years of journals with same insights, no execution</span></div>
+  <div class="stat-box"><span class="number">1</span><span style="font-size:0.8rem;color:#aaa;">Core problem underneath everything</span></div>
+</div>
+
+<!-- THE ONE CORE PROBLEM -->
+<div class="section final">
+  <h2>✅ The One Core Problem Underneath Everything</h2>
+  <p>After reading all four PDFs, every problem — the avoidance, the fantasy, the girl obsessions, the gambling, the planning addiction, the rage, the fap habit, the help-seeking, the validation-chasing — traces back to <strong>one unresolved core:</strong></p>
+  <p style="font-size:1.05rem; color:#f39c12; margin: 14px 0;"><strong>You were hurt as a child with no protection, no escape, and no emotional support. Your brain learned that effort leads to pain, not reward. So it now seeks any shortcut that avoids effort and provides instant relief.</strong></p>
+  <p>Everything else is downstream of that. You are not lazy, stupid, or weak. You are running an old survival program that made sense in childhood but is destroying your adult life.</p>
+  <p>The program can be overwritten — but only through <strong>repeated real action</strong>, not more insight. You have enough insight. You have had enough insight for years.</p>
+</div>
+
+<!-- MASTER TABLE -->
+<div class="section">
+  <h2>📋 Complete Problem → Solution Reference Table</h2>
+  <table>
+    <tr><th>Problem</th><th>Root Cause</th><th>Action</th></tr>
+    <tr><td>Planning instead of doing</td><td>Planning gives dopamine without discomfort</td><td>One plan, no changes for 2 weeks. Track actual hours done.</td></tr>
+    <tr><td>Morning fap → no energy all day</td><td>Stress + loneliness + boredom trigger</td><td>No fap before 6pm. Get out of bed immediately on waking.</td></tr>
+    <tr><td>TikTok / video consumption</td><td>Borrowed scripts replace real thinking</td><td>30-min daily limit. App timer or deletion.</td></tr>
+    <tr><td>Girl obsession during study</td><td>Escape from study stress via emotional fantasy</td><td>Write name + "escape" on paper. Return to book.</td></tr>
+    <tr><td>Gambling (40k lost)</td><td>Same dopamine loop as all other escapes</td><td>Delete betting app today. No "limit" — full removal.</td></tr>
+    <tr><td>Helping others during study hours</td><td>Validation addiction — need to feel useful</td><td>"I can't right now, I'm studying." No explanation.</td></tr>
+    <tr><td>Lying about study progress</td><td>Avoidance of real accountability</td><td>Weekly honest report to one trusted person.</td></tr>
+    <tr><td>No mock tests</td><td>Fear of seeing real score (from perfectionist mother conditioning)</td><td>Mock test every Sunday. Score doesn't matter — doing it does.</td></tr>
+    <tr><td>Rage at mother near exams</td><td>Old trauma triggered by pressure + her voice</td><td>Study with earphones. Name the trigger: "This is old pain."</td></tr>
+    <tr><td>Becoming your mother's patterns</td><td>Unprocessed generational trauma</td><td>Notice → name → choose differently. Therapy strongly recommended.</td></tr>
+    <tr><td>Daydream / fantasy loops</td><td>Content consumption + suppressed need for achievement</td><td>Real small wins daily. Less content = less fantasy fuel.</td></tr>
+    <tr><td>Suicidal thoughts during crisis</td><td>Cumulative stress with no release valve</td><td>Call someone immediately. Nepal NIMH: 9840021600.</td></tr>
+    <tr><td>Late sleep → bad mornings</td><td>Night rewards disrupt sleep discipline</td><td>Phone down 10pm. Sleep 10:30. No exceptions on study days.</td></tr>
+    <tr><td>Study only ~4h/day (real)</td><td>Unrealistic plans + multiple escape routes</td><td>Target 5h, track honestly, build to 6h over 4 weeks.</td></tr>
+  </table>
+</div>
+
+<!-- FINAL NON-NEGOTIABLES -->
+<div class="section warning">
+  <h2>⚡ The 5 Non-Negotiables — Start Today</h2>
+  <p>Everything else can be gradual. These five cannot wait:</p>
+  <ol>
+    <li><strong>Delete the betting app.</strong> Not tomorrow. Right now, after reading this.</li>
+    <li><strong>No fap before noon.</strong> This recovers your morning energy immediately.</li>
+    <li><strong>Phone down at 10pm, sleep by 10:30.</strong> This fixes self-control the next day.</li>
+    <li><strong>Give a mock test this Sunday.</strong> Whatever score comes — that is your real starting point.</li>
+    <li><strong>6-minute morning self-monologue before touching your phone.</strong> You proved this works. Do it daily.</li>
+  </ol>
+  <p style="margin-top:12px; color:#f39c12;">You don't need to fix everything at once. Fix these five first. Everything else becomes easier once these are in place.</p>
+</div>
+
+<div class="section final" style="margin-top:24px;">
+  <h2>✅ Final Honest Assessment</h2>
+  <p>You are more self-aware than most people twice your age. You have correctly diagnosed your trauma, your patterns, your escapes, your triggers — in writing, repeatedly, over four years. That capacity is rare and genuinely valuable.</p>
+  <p style="margin-top:8px;">But awareness without action is just a comfortable lie you tell yourself. The journal has become part of the escape — a way to feel like you're working on yourself without having to sit with a biology chapter.</p>
+  <p style="margin-top:8px;"><strong>The next journal entry that matters is not more insight. It's this: "Today I studied X hours. I gave a mock test. Here is my score."</strong></p>
+  <p style="margin-top:8px; color:#aaa; font-size:0.88rem;">All analysis based strictly on content across all 4 PDFs. No outside assumptions added.</p>
+</div>
+  </div>
+
+</div><!-- /#main-content -->
+
+<script>
+// ── CREDENTIAL HASHES (SHA-256) — plaintext never stored ──
+const VALID_USER = "f57417851e14b32e1d1c83a7242ca6269c1014baee5b1c8ac21054be50a94e9d";
+const VALID_PASS = "cdfe9ad58b46226d63eb322dacd35f4f7ac38096180c87258c142e4bca9a3cf5";
+
+// Simple SHA-256 implementation (no external libs needed)
+async function sha256(msg) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
+async function attemptLogin() {
+  const u = document.getElementById("u-input").value.trim();
+  const p = document.getElementById("p-input").value;
+  const err = document.getElementById("login-error");
+  const btn = document.getElementById("login-btn");
+
+  btn.textContent = "Checking...";
+  btn.disabled = true;
+
+  const [uh, ph] = await Promise.all([sha256(u), sha256(p)]);
+
+  if (uh === VALID_USER && ph === VALID_PASS) {
+    document.getElementById("login-overlay").style.display = "none";
+    document.getElementById("main-content").style.display = "block";
+    sessionStorage.setItem("jauth", "1");
+  } else {
+    err.textContent = "Incorrect username or password.";
+    btn.textContent = "Unlock";
+    btn.disabled = false;
+    document.getElementById("p-input").value = "";
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem("jauth");
+  document.getElementById("login-overlay").style.display = "flex";
+  document.getElementById("main-content").style.display = "none";
+  document.getElementById("u-input").value = "";
+  document.getElementById("p-input").value = "";
+  document.getElementById("login-error").textContent = "";
+}
+
+// Allow Enter key to submit
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter" && document.getElementById("login-overlay").style.display !== "none") {
+    attemptLogin();
+  }
+});
+
+// Restore session if still open (same tab)
+if (sessionStorage.getItem("jauth") === "1") {
+  document.getElementById("login-overlay").style.display = "none";
+  document.getElementById("main-content").style.display = "block";
+}
+
+// ── TABS ──
+function showTab(num) {
+  // Hide all sections
+  document.querySelectorAll(".part-section").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+
+  if (num === "all") {
+    document.getElementById("section-all").classList.add("active");
+    document.getElementById("tab-all").classList.add("active");
+  } else {
+    document.getElementById("section-" + num).classList.add("active");
+    document.getElementById("tab-" + num).classList.add("active");
+  }
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+</script>
+</body>
+</html>
