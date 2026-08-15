@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patent Bet Calculator</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --primary-color: #2c3e50;
+            --accent-color: #27ae60;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--accent-color);
+            border: none;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #219150;
+        }
+
+        #terminal {
+            margin-top: 25px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+
+        .status-msg {
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Patent Calculator</h1>
+    
+    <div class="input-grid">
+        <div class="input-group">
+            <label>Stake (Rs.)</label>
+            <input type="number" id="stake" value="100" placeholder="Enter stake">
+        </div>
+        <div class="input-group">
+            <label>average_odds</label>
+            <input type="number" id="average_odd" step="0.1" value="2.0" placeholder="Enter average odds">
+        </div>
+    </div>
+    
+    <button onclick="runCalculator()">Calculate All Scenarios</button>
+    <p class="status-msg">Calculates events from 3 to 8 selections</p>
+
+    <div id="terminal">Output will appear here...</div>
+</div>
+
+<script>
+// Replicating exactly: int factorial(int n)
+function factorial(n) {
+    if (n === 1 || n === 0) {
+        return 1;
+    }
+    return factorial(n - 1) * n;
+}
+
+// Replicating eexactly: int nCr(int n, int r)
+function nCr(n, r) {
+    if (r > n || r < 0) {
+        return 0;
+    }
+    return Math.floor(factorial(n) / (factorial(n - r) * factorial(r)));
+}
+
+function runCalculator() {
+    const stakeInput = document.getElementById('stake').value;
+    const average_oddInput = document.getElementById('average_odd').value;
+    
+    const stake = parseFloat(stakeInput);
+    const average_odd = parseFloat(average_oddInput);
+    const terminal = document.getElementById('terminal');
+    
+    let output = "";
+    let possible_events = 0;
+
+    // Outer loop: Selected events 3 to 8
+    for (let selected_events = 3; selected_events <= 8; selected_events++) {
+        output += `--------------------------------\n`;
+        output += `SELECTED EVENTS = ${selected_events}\n`;
+        
+        possible_events = 0;
+        for (let i = 2; i <= selected_events; i++) {
+            possible_events += nCr(selected_events, i);
+        }
+        
+        output += `Possible outcome is = ${possible_events}\n`;
+        let stake_per_event = stake / possible_events;
+        output += `Stake per event is = Rs.${stake_per_event.toFixed(4)}\n\n`;
+
+        // Inner loop: Loss events 0 to 6
+        for (let loss_event = 0; loss_event <= 6; loss_event++) {
+            let n_minus_loss = selected_events - loss_event;
+            
+            // Replicating manual win variables win2 to win8
+            let win2 = nCr(n_minus_loss, 2) * stake_per_event * Math.pow(average_odd, 2);
+            let win3 = nCr(n_minus_loss, 3) * stake_per_event * Math.pow(average_odd, 3);
+            let win4 = nCr(n_minus_loss, 4) * stake_per_event * Math.pow(average_odd, 4);
+            let win5 = nCr(n_minus_loss, 5) * stake_per_event * Math.pow(average_odd, 5);
+            let win6 = nCr(n_minus_loss, 6) * stake_per_event * Math.pow(average_odd, 6);
+            let win7 = nCr(n_minus_loss, 7) * stake_per_event * Math.pow(average_odd, 7);
+            let win8 = nCr(n_minus_loss, 8) * stake_per_event * Math.pow(average_odd, 8);
+            
+            let win_amount = win2 + win3 + win4 + win5 + win6 + win7 + win8;
+            let profit = win_amount - stake;
+            
+            output += `Loss: ${loss_event} | Profit: Rs.${profit.toFixed(2)}\n`;
+        }
+        output += `\n`;
+    }
+
+    terminal.innerText = output;
+}
+</script>
+
+</body>
+</html>
